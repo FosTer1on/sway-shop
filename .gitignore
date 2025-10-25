@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django stuff
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# Virtual environment
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# VSCode / JetBrains IDE
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Migrations (если хочешь их скрывать при коммитах)
+# migrations/
+
+# Redis, Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Coverage / testing
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+.pytest_cache/
+
+# Node (если используешь npm/yarn для админки или фронта)
+node_modules/
+
+# Docker
+*.pid
+*.log
+docker-compose.override.yml
+
+# Cache
+*.cache
+.cache/
