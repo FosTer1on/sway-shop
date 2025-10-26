@@ -25,6 +25,8 @@ JWT_SECRET = os.getenv("JWT_SECRET")  # обязательно в .env в про
 # ==========================
 
 DJANGO_APPS = [
+    'jazzmin',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -34,7 +36,6 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    'jazzmin',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -129,7 +130,12 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': False,
 }
 
-# AUTH_USER_MODEL = 'users.User'  # если используешь кастомную модель
+AUTHENTICATION_BACKENDS = [
+    'apps.user.backends.PhoneNumberBackend',
+    'django.contrib.auth.backends.ModelBackend',  # оставляем на всякий случай
+]
+
+AUTH_USER_MODEL = 'user.User'  # кастомная модель
 
 
 # ==========================
