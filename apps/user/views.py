@@ -1,12 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .models import User, PhoneConfirmation
-from .serializers import RegisterSerializer, VerifyCodeSerializer, LoginSerializer
+from .models import *
+from .serializers import *
 from .utils import send_confirmation_code
 
 # 1. Отправка кода
@@ -73,6 +73,13 @@ class VerifyCodeView(APIView):
             user.is_confirmed = True
             user.save()
 
+            Profile.objects.create(
+                user=user,
+                phone_number=user.phone_number,
+                first_name=user.first_name,
+                last_name=user.last_name,
+            )
+
             confirmation.delete()
             del request.session['pending_user']
 
@@ -113,6 +120,7 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 4. Выход из аккаунта
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -132,6 +140,7 @@ class LogoutView(APIView):
             return Response({"detail": "Ошибка при выходе."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 5. Удаление аккаунта
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -140,3 +149,11 @@ class DeleteAccountView(APIView):
         user.delete()
         return Response({"detail": "Аккаунт был успешно удалён."}, status=status.HTTP_204_NO_CONTENT)
 
+
+# 6. Получение профиля
+class ProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user.profile

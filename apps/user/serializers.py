@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, PhoneConfirmation
+from .models import *
 
 class RegisterSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=50)
@@ -14,3 +14,12 @@ class VerifyCodeSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
     password = serializers.CharField()
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = [
+            'id', 'first_name', 'last_name', 'phone_number', 'avatar',
+            'gender', 'address', 'city', 'date_of_birth',
+            'created_at', 'updated_at'
+        ]

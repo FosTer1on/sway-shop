@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.conf import settings
 
 
 class UserManager(BaseUserManager):
@@ -51,3 +52,28 @@ class PhoneConfirmation(models.Model):
     @staticmethod
     def generate_code():
         return ''.join(random.choices(string.digits, k=6))
+
+
+
+
+class Profile(models.Model):
+    GENDER_CHOICES = [
+        ('male', 'Мужской'),
+        ('female', 'Женский')
+    ]
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=20, unique=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
+    address = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.phone_number})"
