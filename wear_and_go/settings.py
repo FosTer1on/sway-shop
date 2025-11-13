@@ -25,6 +25,7 @@ JWT_SECRET = os.getenv("JWT_SECRET")  # обязательно в .env в про
 # ==========================
 
 DJANGO_APPS = [
+    'modeltranslation',
     'jazzmin',
 
     'django.contrib.admin',
@@ -43,7 +44,8 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'apps.user'
+    'apps.user',
+    'apps.product.apps.ProductConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -158,6 +160,13 @@ LANGUAGE_CODE = 'ru'
 TIME_ZONE = 'Asia/Tashkent'
 USE_I18N = True
 USE_TZ = True
+
+LANGUAGES = (
+    ('ru', 'Russian'),
+    ('uz', 'Uzbek'),
+)
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'ru'
 
 
 # ==========================
