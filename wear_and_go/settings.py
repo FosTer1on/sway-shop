@@ -46,7 +46,8 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'apps.user',
     'apps.product.apps.ProductConfig',
-    'apps.favorite'
+    'apps.favorite',
+    'apps.cart',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -59,6 +60,8 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    
+    'wear_and_go.middleware.QueryLangMiddleware',
 
     # CORS (должен идти до CommonMiddleware)
     'corsheaders.middleware.CorsMiddleware',
