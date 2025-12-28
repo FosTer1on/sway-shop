@@ -1,11 +1,22 @@
 from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
 from .models import *
 
 class RegisterSerializer(serializers.Serializer):
-    first_name = serializers.CharField(max_length=50)
-    last_name = serializers.CharField(max_length=50)
-    phone_number = serializers.CharField(max_length=15)
-    password = serializers.CharField(write_only=True)
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    phone_number = serializers.CharField()
+    password = serializers.CharField(min_length=6)
+
+    def validate_phone_number(self, value):
+        if not value.startswith("+998"):
+            raise serializers.ValidationError("Неверный формат номера")
+        return value
+
+    def validated_data_with_hashed_password(self):
+        data = self.validated_data.copy()
+        data["password"] = make_password(data["password"])
+        return data
 
 class VerifyCodeSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15)

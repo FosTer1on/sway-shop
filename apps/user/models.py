@@ -5,6 +5,19 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.conf import settings
 
+class PendingUser(models.Model):
+    phone_number = models.CharField(max_length=15, unique=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    password = models.CharField(max_length=128)  # уже захешированный
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=10)
+
+    def __str__(self):
+        return self.phone_number
+
 
 class UserManager(BaseUserManager):
     def create_user(self, phone_number, password=None, **extra_fields):
@@ -52,8 +65,6 @@ class PhoneConfirmation(models.Model):
     @staticmethod
     def generate_code():
         return ''.join(random.choices(string.digits, k=6))
-
-
 
 
 class Profile(models.Model):

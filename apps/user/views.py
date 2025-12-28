@@ -15,21 +15,35 @@ class RegisterView(APIView):
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            phone = serializer.validated_data['phone_number']
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
 
-            # 🔥 Проверяем, не существует ли уже пользователь с таким номером
-            if User.objects.filter(phone_number=phone).exists():
-                return Response(
-                    {"detail": "Пользователь с таким номером уже существует."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        phone = serializer.validated_data["phone_number"]
 
-            send_confirmation_code(phone)
-            request.session['pending_user'] = serializer.validated_data
-            return Response({"detail": "Код отправлен на номер телефона."}, status=status.HTTP_200_OK)
+        if User.objects.filter(phone_number=phone).exists():
+            return Response(
+                {"detail": "Пользователь с таким номером уже существует"},
+                status=400
+            )
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # 🔥 сохраняем / обновляем временного пользователя
+        PendingUser.objects.update_or_create(
+            phone_number=phone,
+            defaults=serializer.validated_data_with_hashed_password()
+        )
+
+        # 🔥 создаем или обновляем код
+        PhoneConfirmation.objects.update_or_create(
+            phone_number=phone,
+            defaults={"code": PhoneConfirmation.generate_code()}
+        )
+
+        send_confirmation_code(phone)
+
+        return Response(
+            {"detail": "Код отправлен"},
+            status=status.HTTP_200_OK
+        )
 
 
 # 2. Подтверждение кода
@@ -38,54 +52,73 @@ class VerifyCodeView(APIView):
 
     def post(self, request):
         serializer = VerifyCodeSerializer(data=request.data)
-        if serializer.is_valid():
-            phone = serializer.validated_data['phone_number']
-            code = serializer.validated_data['code']
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
 
-            try:
-                confirmation = PhoneConfirmation.objects.get(phone_number=phone)
-            except PhoneConfirmation.DoesNotExist:
-                return Response({"detail": "Код не найден."}, status=status.HTTP_400_BAD_REQUEST)
+        phone = serializer.validated_data["phone_number"]
+        code = serializer.validated_data["code"]
 
-            if confirmation.is_expired():
-                confirmation.delete()
-                return Response({"detail": "Код истёк."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            confirmation = PhoneConfirmation.objects.get(phone_number=phone)
+        except PhoneConfirmation.DoesNotExist:
+            return Response({"detail": "Код не найден"}, status=400)
 
-            if confirmation.code != code:
-                return Response({"detail": "Неверный код."}, status=status.HTTP_400_BAD_REQUEST)
-
-            data = request.session.get("pending_user")
-            if not data or data['phone_number'] != phone:
-                return Response({"detail": "Нет данных регистрации."}, status=status.HTTP_400_BAD_REQUEST)
-
-            # ⚠️ Проверяем, не зарегистрирован ли уже пользователь
-            if User.objects.filter(phone_number=phone).exists():
-                confirmation.delete()
-                return Response({"detail": "Пользователь с таким номером уже существует."},
-                                status=status.HTTP_400_BAD_REQUEST)
-
-            user = User.objects.create_user(
-                phone_number=phone,
-                first_name=data['first_name'],
-                last_name=data['last_name'],
-                password=data['password'],
-            )
-            user.is_confirmed = True
-            user.save()
-
-            Profile.objects.create(
-                user=user,
-                phone_number=user.phone_number,
-                first_name=user.first_name,
-                last_name=user.last_name,
-            )
-
+        if confirmation.is_expired():
             confirmation.delete()
-            del request.session['pending_user']
+            return Response({"detail": "Код истёк"}, status=400)
 
-            return Response({"detail": "Регистрация завершена!"}, status=status.HTTP_201_CREATED)
+        if confirmation.code != code:
+            return Response({"detail": "Неверный код"}, status=400)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            pending = PendingUser.objects.get(phone_number=phone)
+        except PendingUser.DoesNotExist:
+            return Response({"detail": "Нет данных регистрации"}, status=400)
+
+        if pending.is_expired():
+            pending.delete()
+            return Response({"detail": "Регистрация устарела"}, status=400)
+
+        # 🔥 создаём пользователя
+        user = User.objects.create(
+            phone_number=phone,
+            first_name=pending.first_name,
+            last_name=pending.last_name,
+            password=pending.password,
+            is_active=True,
+            is_confirmed=True
+        )
+
+        Profile.objects.create(
+            user=user,
+            phone_number=phone,
+            first_name=pending.first_name,
+            last_name=pending.last_name
+        )
+
+        # 🔐 АВТОЛОГИН — ВЫДАЧА JWT
+        refresh = RefreshToken.for_user(user)
+
+        # 🔥 чистим мусор
+        pending.delete()
+        confirmation.delete()
+
+        return Response(
+            {
+                "detail": "Регистрация завершена",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "id": user.id,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "phone_number": user.phone_number,
+                }
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+
 
 
 
