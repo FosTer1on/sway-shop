@@ -52,4 +52,4 @@ class CartSerializer(serializers.ModelSerializer):
         return sum(item.quantity for item in obj.items.all())
 
     def get_total_with_service(self, obj):
-        return self.get_items_total_price(obj) * Decimal("0.03") + self.get_items_total_price(obj)
+        return self.get_items_total_price(obj) * Decimal("0.05") + self.get_items_total_price(obj)

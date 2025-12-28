@@ -5,15 +5,16 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from .models import *
 from .serializers import *
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 # ✅ Кастомная пагинация (по 30 товаров)
 class ProductPagination(PageNumberPagination):
-    page_size = 30
+    page_size = 1
 
 
 # ✅ 1. Получение всех товаров
-class ProductListAPIView(APIView):
+class ProductListAPIView(APIView):    
     def get(self, request):
         queryset = Product.objects.filter(is_active=True)
 
