@@ -39,7 +39,6 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 ]
 
@@ -61,7 +60,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    
+
     'wear_and_go.middleware.QueryLangMiddleware',
 
     # CORS (должен идти до CommonMiddleware)
@@ -98,10 +97,21 @@ WSGI_APPLICATION = 'wear_and_go.wsgi.application'
 # 🗄️ База данных
 # ==========================
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'sway',
+        'USER': 'sway_admin',
+        'PASSWORD': 'sway_shop',
+        'HOST': 'localhost',
+        'PORT': '5433'
     }
 }
 
@@ -121,21 +131,18 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': JWT_SECRET,
-    'VERIFYING_KEY': None,
+    'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
 
-    # lifetimes
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 
-    # rotation & blacklist: хорошая практика для продакшена
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
 
-    # дополнительные защищающие опции
     'UPDATE_LAST_LOGIN': False,
 }
+
 
 AUTHENTICATION_BACKENDS = [
     'apps.user.backends.PhoneNumberBackend',
@@ -149,12 +156,13 @@ AUTH_USER_MODEL = 'user.User'  # кастомная модель
 # 🌐 CORS (для фронта на Vite)
 # ==========================
 
-CORS_ALLOW_ALL_ORIGINS = True  # на MVP можно включить
-# или безопаснее так:
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5173",
-#     "http://127.0.0.1:5173",
-# ]
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 
 
 # ==========================
