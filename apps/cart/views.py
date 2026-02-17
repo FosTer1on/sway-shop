@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from .models import Cart, CartItem
-from apps.product.models import Product, Size
+from apps.product.models import Product, Size, ProductSize
 
 from .serializers import CartSerializer
 
@@ -71,11 +71,33 @@ class CartUpdateQuantityView(APIView):
             return Response({"detail": "quantity обязателен"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            # Преобразуем количество в целое число сразу
+            new_quantity = int(quantity)
+            if new_quantity <= 0:
+                return Response({"detail": "Количество должно быть положительным числом"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except ValueError:
+             return Response({"detail": "Некорректное значение quantity"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
             item = CartItem.objects.get(id=item_id, cart__user=request.user)
         except CartItem.DoesNotExist:
             return Response({"detail": "Элемент не найден"}, status=status.HTTP_404_NOT_FOUND)
 
-        item.quantity = int(quantity)
+        try:
+            product_size_stock = ProductSize.objects.get(product=item.product, size=item.size)
+            available_quantity = product_size_stock.quantity
+        except ProductSize.DoesNotExist:
+            return Response({"detail": "Информация о наличии товара данного размера отсутствует"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        if available_quantity < new_quantity:
+            return Response(
+                {"detail": f"В наличии только {available_quantity} шт. этого товара в данном размере."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        item.quantity = new_quantity
         item.save()
 
         return Response({"detail": "Количество изменено"})

@@ -8,6 +8,7 @@ from apps.product.serializers import ProductListSerializer
 class CartItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     size = serializers.CharField(source="size.name")
+    size_id = serializers.IntegerField(source="size.id")
 
     base_price = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
@@ -18,6 +19,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             "id",
             "product",
             "size",
+            "size_id",
             "quantity",
             "base_price",
             "total_price",
@@ -46,10 +48,13 @@ class CartSerializer(serializers.ModelSerializer):
         ]
 
     def get_items_total_price(self, obj):
-        return sum(item.total_price for item in obj.items.all())
+        summary = sum(item.total_price for item in obj.items.all())
+        return f"{int(summary):,}".replace(",", " ")
 
     def get_items_total_quantity(self, obj):
-        return sum(item.quantity for item in obj.items.all())
+        summary = sum(item.quantity for item in obj.items.all())
+        return f"{int(summary):,}".replace(",", " ")
 
     def get_total_with_service(self, obj):
-        return self.get_items_total_price(obj) * Decimal("0.05") + self.get_items_total_price(obj)
+        summary = sum(item.total_price for item in obj.items.all()) * Decimal("0.05") + sum(item.total_price for item in obj.items.all())
+        return f"{int(summary):,}".replace(",", " ")
