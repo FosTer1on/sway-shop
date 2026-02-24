@@ -1,7 +1,9 @@
 import os
+import dj_database_url
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+
 
 # Загружаем переменные окружения
 load_dotenv()
@@ -15,10 +17,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key")
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 
-# JWT signing key
-JWT_SECRET = os.getenv("JWT_SECRET")  # обязательно в .env в проде
 
 # ==========================
 # 🧩 Приложения
@@ -40,6 +41,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'storages',
 ]
 
 LOCAL_APPS = [
@@ -59,6 +61,8 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
 
     'wear_and_go.middleware.QueryLangMiddleware',
@@ -98,20 +102,19 @@ WSGI_APPLICATION = 'wear_and_go.wsgi.application'
 # ==========================
 
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
+#     "default": dj_database_url.config(
+#         default=os.getenv("DATABASE_URL")
+#     )
 # }
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'sway',
-        'USER': 'sway_admin',
-        'PASSWORD': 'sway_shop',
-        'HOST': 'localhost',
-        'PORT': '5433'
+        'NAME': "sway",
+        'USER': "sway_admin",
+        'PASSWORD': "sway_shop",
+        'HOST': "localhost",
+        'PORT': "5433",
     }
 }
 
@@ -159,10 +162,7 @@ AUTH_USER_MODEL = 'user.User'  # кастомная модель
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ]
+    CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
 
 # ==========================
@@ -185,13 +185,30 @@ MODELTRANSLATION_DEFAULT_LANGUAGE = 'ru'
 # ==========================
 # 🖼️ Статика и медиа
 # ==========================
-
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_ENDPOINT_URL = os.getenv("AWS_S3_ENDPOINT_URL")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
+AWS_S3_CUSTOM_DOMAIN = "fvzxykftgtdnfjwsxj.storage.supabase.co"
+
+AWS_S3_ADDRESSING_STYLE = "path"
+AWS_QUERYSTRING_AUTH = False  # чтобы ссылки были публичные
+AWS_DEFAULT_ACL = None
+AWS_S3_FILE_OVERWRITE = False
+AWS_S3_VERIFY = True
 
 # ==========================
 # ⚙️ Прочее
