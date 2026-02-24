@@ -15,10 +15,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ==========================
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key")
-DEBUG = os.getenv("DEBUG", "True") == "True"
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = []
-# ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 
 # ==========================
@@ -101,21 +100,10 @@ WSGI_APPLICATION = 'wear_and_go.wsgi.application'
 # 🗄️ База данных
 # ==========================
 
-# DATABASES = {
-#     "default": dj_database_url.config(
-#         default=os.getenv("DATABASE_URL")
-#     )
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "sway",
-        'USER': "sway_admin",
-        'PASSWORD': "sway_shop",
-        'HOST': "localhost",
-        'PORT': "5433",
-    }
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL")
+    )
 }
 
 
@@ -215,3 +203,5 @@ AWS_S3_VERIFY = True
 # ==========================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
