@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 # ✅ Кастомная пагинация (по 30 товаров)
 class ProductPagination(PageNumberPagination):
-    page_size = 1
+    page_size = 30
 
 
 # ✅ 1. Получение всех товаров
