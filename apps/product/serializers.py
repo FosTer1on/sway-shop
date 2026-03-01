@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from utils.storage import build_public_url
 
 
 class StoreSerializer(serializers.ModelSerializer):
@@ -9,19 +10,25 @@ class StoreSerializer(serializers.ModelSerializer):
 
 
 class BrandSerializer(serializers.ModelSerializer):
-    icon = serializers.ImageField(read_only=True)
+    icon_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Brand
-        fields = ["id", "name", "slug", "icon", "created_at", "updated_at"]
+        fields = ["id", "name", "slug", "icon_url", "created_at", "updated_at"]
+
+    def get_icon_url(self, obj):
+        return build_public_url(obj.icon)
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    icon = serializers.ImageField(read_only=True)
+    icon_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
-        fields = ["id", "name", "slug", "icon", "created_at", "updated_at"]
+        fields = ["id", "name", "slug", "icon_url", "created_at", "updated_at"]
+
+    def get_icon_url(self, obj):
+        return build_public_url(obj.icon)
 
 
 class SizeSerializer(serializers.ModelSerializer):
@@ -31,9 +38,14 @@ class SizeSerializer(serializers.ModelSerializer):
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductImage
-        fields = ["image"]
+        fields = ["image_url"]
+
+    def get_image_url(self, obj):
+        return build_public_url(obj.image)
 
 
 class ProductListSerializer(serializers.ModelSerializer):
