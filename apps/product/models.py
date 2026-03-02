@@ -46,7 +46,7 @@ class Size(models.Model):
 # ========================
 class Category(TimeStampedModel):
     name = models.CharField(_("Название категории"), max_length=255, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(max_length=265, unique=True, blank=True)
     icon = models.ImageField(upload_to="category_icons/", blank=True, null=True)
     size_type = models.ForeignKey(SizeType, on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -64,7 +64,7 @@ class Category(TimeStampedModel):
 # ========================
 class Brand(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(max_length=255,unique=True, blank=True)
     icon = models.ImageField(upload_to="brand_icons/", blank=True, null=True)
 
     def save(self, *args, **kwargs):
@@ -78,7 +78,7 @@ class Brand(TimeStampedModel):
 
 class Store(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(max_length=265,unique=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -98,7 +98,7 @@ class Product(TimeStampedModel):
         BEST_SELLER = "best_seller", _("Бестселлер")
 
     name = models.CharField(_("Название"), max_length=255)
-    slug = models.SlugField(_("Slug"), unique=True, blank=True)
+    slug = models.SlugField(_("Slug"), max_length=265, unique=True, blank=True)
 
     store = models.ForeignKey("Store", on_delete=models.CASCADE, related_name="products")
     category = models.ForeignKey("Category", on_delete=models.CASCADE, related_name="products")
