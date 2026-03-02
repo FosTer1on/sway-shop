@@ -208,3 +208,26 @@ SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django.request": {  # сюда падают 500
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.db.backends": {  # если хочешь видеть SQL (можно временно)
+            "handlers": ["console"],
+            "level": "ERROR",
+        },
+    },
+}
