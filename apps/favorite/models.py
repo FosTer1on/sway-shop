@@ -23,3 +23,7 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user} → {self.product}"
+
+    class Meta:
+        verbose_name = "Избранное"
+        verbose_name_plural = "Избранные"

@@ -13,6 +13,10 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"Корзина {self.user}"
+    
+    class Meta:
+        verbose_name = "Корзина"
+        verbose_name_plural = "Корзины"
 
 
 class CartItem(models.Model):
@@ -42,3 +46,7 @@ class CartItem(models.Model):
     @property
     def base_price(self):
         return self.product.price
+
+    class Meta:
+        verbose_name = "Товар корзины"
+        verbose_name_plural = "Товары корзины"

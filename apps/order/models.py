@@ -39,6 +39,10 @@ class Order(models.Model):
     def __str__(self):
         return f"Order #{self.id} ({self.user})"
 
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
@@ -54,3 +58,7 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product} x {self.quantity}"
+
+    class Meta:
+        verbose_name = "Товар заказа"
+        verbose_name_plural = "Товары заказа"

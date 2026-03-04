@@ -24,6 +24,10 @@ class SizeType(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = _("Название размера")
+        verbose_name_plural = _("Название размеров")
 
 
 # ========================
@@ -39,6 +43,10 @@ class Size(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.size_type.name})"
+
+    class Meta:
+        verbose_name = _("Размер")
+        verbose_name_plural = _("Размеры")
 
 
 # ========================
@@ -58,6 +66,10 @@ class Category(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = _("Категория")
+        verbose_name_plural = _("Категории")
+
 
 # ========================
 # 🏷 Бренды и магазины
@@ -75,6 +87,10 @@ class Brand(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = _("Бренд")
+        verbose_name_plural = _("Бренды")
+
 
 class Store(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)
@@ -87,6 +103,10 @@ class Store(TimeStampedModel):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = _("Магазин")
+        verbose_name_plural = _("Магазины")
 
 
 # ========================
@@ -158,6 +178,10 @@ class ProductSize(models.Model):
     def __str__(self):
         return f"{self.product.name} — {self.size.name}: {self.quantity}"
 
+    class Meta:
+        verbose_name = _("Размер продукта")
+        verbose_name_plural = _("Размеры продукта")
+
 
 # ========================
 # 🖼 Фото
@@ -169,3 +193,7 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.product.name}"
+
+    class Meta:
+        verbose_name = _("Фото продукта")
+        verbose_name_plural = _("Фотки продукта")

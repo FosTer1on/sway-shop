@@ -6,10 +6,13 @@ from .models import (
     Product, ProductImage,
     SizeType, Size, ProductSize
 )
+from utils.storage import build_public_url
 
 # ==========================
 # 🔹 CATEGORY (с переводом)
 # ==========================
+
+
 @admin.register(Category)
 class CategoryAdmin(TranslationAdmin):
     list_display = ("name", "slug", "created_at", "updated_at")
@@ -73,8 +76,9 @@ class ProductImageInline(admin.TabularInline):
     readonly_fields = ("preview",)
 
     def preview(self, obj):
-        if obj.image:
-            return format_html(f'<img src="{obj.image.url}" width="80" style="border-radius:6px"/>')
+        if obj.image and getattr(obj.image, "name", None):
+            url = build_public_url(obj.image.name)  # ✅ name, а не url
+            return format_html('<img src="{}" width="80" style="border-radius:6px"/>', url)
         return "—"
     preview.short_description = "Превью"
 
@@ -99,14 +103,15 @@ class ProductSizeInline(admin.TabularInline):
             if product_id:
                 from .models import Product
                 try:
-                    product = Product.objects.select_related("category__size_type").get(pk=product_id)
+                    product = Product.objects.select_related(
+                        "category__size_type").get(pk=product_id)
                     size_type = getattr(product.category, "size_type", None)
                     if size_type:
-                        field.queryset = field.queryset.filter(size_type=size_type)
+                        field.queryset = field.queryset.filter(
+                            size_type=size_type)
                 except Product.DoesNotExist:
                     pass
         return field
-
 
 
 # ==========================
@@ -153,11 +158,11 @@ class ProductAdmin(TranslationAdmin):
 
     def admin_image_preview(self, obj):
         img = obj.images.first()
-        if img:
-            return format_html(f'<img src="{img.image.url}" width="55" style="border-radius:5px"/>')
+        if img and img.image and getattr(img.image, "name", None):
+            url = build_public_url(img.image.name)  # ✅ name, а не url
+            return format_html('<img src="{}" width="55" style="border-radius:5px"/>', url)
         return "—"
     admin_image_preview.short_description = "Фото"
-
 
 
 # ==========================
