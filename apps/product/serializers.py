@@ -17,7 +17,9 @@ class BrandSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "slug", "icon_url", "created_at", "updated_at"]
 
     def get_icon_url(self, obj):
-        return build_public_url(obj.icon)
+        if not obj.icon:
+            return None
+        return build_public_url(obj.icon.name)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -28,7 +30,9 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ["id", "name", "slug", "icon_url", "created_at", "updated_at"]
 
     def get_icon_url(self, obj):
-        return build_public_url(obj.icon)
+        if not obj.icon:
+            return None
+        return build_public_url(obj.icon.name)
 
 
 class SizeSerializer(serializers.ModelSerializer):
@@ -45,7 +49,9 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ["image_url"]
 
     def get_image_url(self, obj):
-        return build_public_url(obj.image)
+        if not obj.image:
+            return None
+        return build_public_url(obj.image.name)
 
 
 class ProductListSerializer(serializers.ModelSerializer):
@@ -56,15 +62,28 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            "id", "name", "slug", "price", "final_price",
-            "discount", "status", "is_season", "brand", "store", "images"
+            "id",
+            "name",
+            "slug",
+            "price",
+            "final_price",
+            "discount",
+            "status",
+            "is_season",
+            "brand",
+            "store",
+            "images",
         ]
 
     def get_price(self, obj):
         return f"{int(obj.price):,}".replace(",", " ")
 
     def get_final_price(self, obj):
-        final = obj.price - (obj.price * obj.discount / 100)
+        final = getattr(
+            obj,
+            "final_price_calc",
+            obj.price - (obj.price * obj.discount / 100)
+        )
         return f"{int(final):,}".replace(",", " ")
 
 
@@ -86,11 +105,34 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "price",
+            "final_price",
+            "discount",
+            "quantity",
+            "is_active",
+            "is_season",
+            "status",
+            "brand",
+            "store",
+            "category",
+            "images",
+            "sizes",
+            "created_at",
+            "updated_at",
+        ]
 
     def get_price(self, obj):
         return f"{int(obj.price):,}".replace(",", " ")
 
     def get_final_price(self, obj):
-        final = obj.price - (obj.price * obj.discount / 100)
+        final = getattr(
+            obj,
+            "final_price_calc",
+            obj.price - (obj.price * obj.discount / 100)
+        )
         return f"{int(final):,}".replace(",", " ")

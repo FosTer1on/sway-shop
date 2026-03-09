@@ -10,13 +10,21 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 # ✅ Кастомная пагинация (по 30 товаров)
 class ProductPagination(PageNumberPagination):
-    page_size = 30
+    page_size = 12
 
 
 # ✅ 1. Получение всех товаров
 class ProductListAPIView(APIView):
     def get(self, request):
-        queryset = Product.objects.filter(is_active=True)
+        queryset = Product.objects.filter(is_active=True).select_related(
+            "brand",
+            "store",
+            "category",
+        ).prefetch_related(
+            "images",
+            "sizes",
+            "sizes__size",
+        )
 
         # 🔹 Аннотация реальной финальной цены
         queryset = queryset.annotate(
@@ -78,7 +86,8 @@ class ProductListAPIView(APIView):
             queryset = queryset.order_by("-final_price_calc", "-id")
         else:
             if not has_filters:
-                queryset = queryset.order_by("-is_season", "-created_at", "-id")
+                queryset = queryset.order_by(
+                    "-is_season", "-created_at", "-id")
             else:
                 queryset = queryset.order_by("-created_at", "-id")
 
@@ -95,8 +104,15 @@ class ProductListAPIView(APIView):
 class ProductDetailAPIView(APIView):
     def get(self, request, slug):
         try:
-            product = Product.objects.prefetch_related(
-                "images", "sizes").get(slug=slug, is_active=True)
+            product = Product.objects.select_related(
+                "brand",
+                "store",
+                "category",
+            ).prefetch_related(
+                "images",
+                "sizes",
+                "sizes__size",
+            ).get(slug=slug, is_active=True)
         except Product.DoesNotExist:
             return Response({"detail": "Товар не найден"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -114,6 +130,14 @@ class ProductSearchAPIView(APIView):
         queryset = Product.objects.filter(
             is_active=True,
             name__icontains=query
+        ).select_related(
+            "store",
+            "brand",
+            "category",
+        ).prefetch_related(
+            "images",
+            "sizes",
+            "sizes__size",
         ).annotate(
             final_price_calc=ExpressionWrapper(
                 F("price") - (F("price") * F("discount") / 100),
