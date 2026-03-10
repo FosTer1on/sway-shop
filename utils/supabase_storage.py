@@ -15,3 +15,6 @@ class SupabaseMediaStorage(S3Boto3Storage):
         if dir_name:
             return f"{dir_name}/{unique_name}"
         return unique_name
+
+    def exists(self, name):
+        return False
