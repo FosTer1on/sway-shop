@@ -26,7 +26,6 @@ class ProductListAPIView(APIView):
             "sizes__size",
         )
 
-        # 🔹 Аннотация реальной финальной цены
         queryset = queryset.annotate(
             final_price_calc=ExpressionWrapper(
                 F("price") - (F("price") * F("discount") / 100),
@@ -34,7 +33,6 @@ class ProductListAPIView(APIView):
             )
         )
 
-        # --- 🔹 Множественные фильтры ---
         stores = request.GET.getlist("store")
         brands = request.GET.getlist("brand")
         categories = request.GET.getlist("category")
@@ -67,13 +65,12 @@ class ProductListAPIView(APIView):
         if max_price:
             queryset = queryset.filter(final_price_calc__lte=max_price)
 
-        if discount_only == "true":
+        if str(discount_only).lower() == "true":
             queryset = queryset.filter(discount__gt=0)
 
         if status_param:
             queryset = queryset.filter(status=status_param)
 
-        # --- 🔹 Логика сортировки ---
         has_filters = any([
             stores, brands, categories, sizes,
             min_price, max_price,
@@ -86,12 +83,10 @@ class ProductListAPIView(APIView):
             queryset = queryset.order_by("-final_price_calc", "-id")
         else:
             if not has_filters:
-                queryset = queryset.order_by(
-                    "-is_season", "-created_at", "-id")
+                queryset = queryset.order_by("-is_season", "created_at", "id")
             else:
-                queryset = queryset.order_by("-created_at", "-id")
+                queryset = queryset.order_by("created_at", "id")
 
-        # --- 🔹 Пагинация ---
         paginator = ProductPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = ProductListSerializer(result_page, many=True)
@@ -154,21 +149,21 @@ class ProductSearchAPIView(APIView):
 
 class StoreListView(APIView):
     def get(self, request):
-        stores = Store.objects.all()
+        stores = Store.objects.only("id", "name", "slug", "created_at", "updated_at")
         serializer = StoreSerializer(stores, many=True)
         return Response(serializer.data)
 
 
 class BrandListView(APIView):
     def get(self, request):
-        brands = Brand.objects.all()
+        brands = Brand.objects.only("id", "name", "slug", "icon", "created_at", "updated_at")
         serializer = BrandSerializer(brands, many=True)
         return Response(serializer.data)
 
 
 class CategoryListView(APIView):
     def get(self, request):
-        categories = Category.objects.all()
+        categories = Category.objects.only("id", "name", "slug", "icon", "created_at", "updated_at")
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data)
 

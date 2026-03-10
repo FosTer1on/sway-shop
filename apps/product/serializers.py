@@ -88,7 +88,8 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 
 class ProductSizeSerializer(serializers.ModelSerializer):
-    size = serializers.CharField(source="size.name")
+    size = serializers.CharField(source="size.name", read_only=True)
+    size_id = serializers.IntegerField(source="size.id", read_only=True)
 
     class Meta:
         model = ProductSize
