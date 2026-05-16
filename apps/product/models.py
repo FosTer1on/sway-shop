@@ -211,7 +211,7 @@ class ProductImage(models.Model):
         verbose_name_plural = _("Фотки продукта")
 
 # & Outfits
-class Outfit(TimeStampedModel):
+class Outfit(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=265, unique=True, blank=True)
 
@@ -227,6 +227,10 @@ class Outfit(TimeStampedModel):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        verbose_name = _("Лук")
+        verbose_name_plural = _("Луки")
 
 
 class OutfitItem(models.Model):

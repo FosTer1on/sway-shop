@@ -1,4 +1,4 @@
-from django.conf import settings
+from wear_and_go.settings.prod import SUPABASE_URL, SUPABASE_BUCKET
 
 
 def build_public_url(path: str):
@@ -6,8 +6,8 @@ def build_public_url(path: str):
         return None
 
     return (
-        f"{settings.SUPABASE_URL}"
+        f"{SUPABASE_URL}"
         f"/storage/v1/object/public/"
-        f"{settings.SUPABASE_BUCKET}/"
+        f"{SUPABASE_BUCKET}/"
         f"{path}"
     )

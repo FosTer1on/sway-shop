@@ -1,11 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from modeltranslation.admin import TranslationAdmin
-from .models import (
-    Category, Brand, Store,
-    Product, ProductImage,
-    SizeType, Size, ProductSize
-)
+from .models import *
 from utils.storage import build_public_url
 
 # ==========================
@@ -192,3 +188,11 @@ class ProductSizeAdmin(admin.ModelAdmin):
     list_display = ("product", "size", "quantity")
     list_filter = ("size__size_type", "product__store")
     search_fields = ("product__name", "size__name")
+
+@admin.register(Outfit)
+class Outfit(admin.ModelAdmin):
+    list_display = ("image", "title")
+
+@admin.register(OutfitItem)
+class OutfitItem(admin.ModelAdmin):
+    list_display = ("product__name",)
