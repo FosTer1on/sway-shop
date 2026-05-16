@@ -6,7 +6,10 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wear_and_go.settings')
+    os.environ.setdefault(
+        'DJANGO_SETTINGS_MODULE',
+        'wear_and_go.settings.dev'
+    )
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

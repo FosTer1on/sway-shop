@@ -117,6 +117,18 @@ class Product(TimeStampedModel):
         POPULAR = "popular", _("Популярное")
         BEST_SELLER = "best_seller", _("Бестселлер")
 
+    class Region(models.TextChoices):
+        CHINA = "china", "Китай"
+        USA = "usa", "США"
+        EUROPE = "europe", "Европа"
+        RUSSIA = "russia", "Россия"
+
+    region = models.CharField(
+        max_length=20,
+        choices=Region.choices,
+        default=Region.CHINA
+    )
+
     name = models.CharField(_("Название"), max_length=255)
     slug = models.SlugField(_("Slug"), max_length=265, unique=True, blank=True)
 
@@ -197,3 +209,32 @@ class ProductImage(models.Model):
     class Meta:
         verbose_name = _("Фото продукта")
         verbose_name_plural = _("Фотки продукта")
+
+# & Outfits
+class Outfit(TimeStampedModel):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=265, unique=True, blank=True)
+
+    image = models.ImageField(upload_to="outfits/")
+    description = models.TextField(blank=True)
+
+    is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug(self, self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class OutfitItem(models.Model):
+    outfit = models.ForeignKey(Outfit, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    # порядок (чтобы кепка была сверху, например)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order"]

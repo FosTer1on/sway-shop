@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wear_and_go.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wear_and_go.settings.prod')
 
 application = get_wsgi_application()

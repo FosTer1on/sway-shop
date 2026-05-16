@@ -137,3 +137,19 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             obj.price - (obj.price * obj.discount / 100)
         )
         return f"{int(final):,}".replace(",", " ")
+
+
+class OutfitItemSerializer(serializers.ModelSerializer):
+    product = ProductListSerializer()
+
+    class Meta:
+        model = OutfitItem
+        fields = ["id", "product", "order"]
+
+
+class OutfitSerializer(serializers.ModelSerializer):
+    items = OutfitItemSerializer(many=True)
+
+    class Meta:
+        model = Outfit
+        fields = ["id", "title", "slug", "image", "items"]

@@ -10,4 +10,10 @@ urlpatterns = [
     path('api/favorites/', include('apps.favorite.urls')),
     path('api/cart/', include('apps.cart.urls')),
     path('api/order/', include('apps.order.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT
+    )
