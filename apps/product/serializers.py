@@ -58,6 +58,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     final_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
+    region = serializers.CharField(source="get_region_display")
 
     class Meta:
         model = Product
@@ -72,6 +73,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "is_season",
             "brand",
             "store",
+            "region",
             "images",
         ]
 
@@ -121,6 +123,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "brand",
             "store",
             "category",
+            "region",
             "images",
             "sizes",
             "created_at",

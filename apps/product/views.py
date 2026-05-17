@@ -38,6 +38,8 @@ class ProductListAPIView(APIView):
         categories = request.GET.getlist("category")
         sizes = request.GET.getlist("size")
 
+        region = request.GET.get("region")
+
         min_price = request.GET.get("min_price")
         max_price = request.GET.get("max_price")
         discount_only = request.GET.get("discount")
@@ -59,6 +61,9 @@ class ProductListAPIView(APIView):
                 sizes__quantity__gt=0
             ).distinct()
 
+        if region:
+            queryset = queryset.filter(region__iexact=region)
+
         if min_price:
             queryset = queryset.filter(final_price_calc__gte=min_price)
 
@@ -73,6 +78,7 @@ class ProductListAPIView(APIView):
 
         has_filters = any([
             stores, brands, categories, sizes,
+            region,
             min_price, max_price,
             discount_only, status_param
         ])
@@ -93,9 +99,8 @@ class ProductListAPIView(APIView):
 
         return paginator.get_paginated_response(serializer.data)
 
+
 # ✅ 2. Получение конкретного товара по slug
-
-
 class ProductDetailAPIView(APIView):
     def get(self, request, slug):
         try:
