@@ -105,6 +105,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     store = StoreSerializer(read_only=True)
     final_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
+    region = serializers.CharField(source="get_region_display")
 
     class Meta:
         model = Product
@@ -153,6 +154,31 @@ class OutfitItemSerializer(serializers.ModelSerializer):
 class OutfitSerializer(serializers.ModelSerializer):
     items = OutfitItemSerializer(many=True)
 
+    price = serializers.SerializerMethodField()
+    final_price = serializers.SerializerMethodField()
+
     class Meta:
         model = Outfit
-        fields = ["id", "title", "slug", "image", "items"]
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "image",
+            "description",
+            "price",
+            "final_price",
+            "discount",
+            "items",
+        ]
+
+    def get_price(self, obj):
+        return f"{int(obj.price):,}".replace(",", " ")
+
+    def get_final_price(self, obj):
+        final = getattr(
+            obj,
+            "final_price_calc",
+            obj.price - (obj.price * obj.discount / 100)
+        )
+
+        return f"{int(final):,}".replace(",", " ")

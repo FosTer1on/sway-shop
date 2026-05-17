@@ -12,4 +12,7 @@ urlpatterns = [
 
     path("categories/", CategoryListView.as_view()),
     path("categories/<slug:slug>/sizes/", CategorySizesView.as_view()),
+
+    path("outfits/", OutfitListAPIView.as_view()),
+    path("outfits/<slug:slug>/", OutfitDetailAPIView.as_view()),
 ]

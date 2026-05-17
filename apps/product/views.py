@@ -1,5 +1,6 @@
 from django.db.models import F, ExpressionWrapper, DecimalField
 from rest_framework.views import APIView
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -183,4 +184,58 @@ class CategorySizesView(APIView):
 
         sizes = Size.objects.filter(size_type=category.size_type)
         serializer = SizeSerializer(sizes, many=True)
+        return Response(serializer.data)
+
+
+class OutfitListAPIView(APIView):
+    def get(self, request):
+        queryset = Outfit.objects.filter(is_active=True).prefetch_related(
+            "items",
+            "items__product",
+            "items__product__images",
+        )
+
+        queryset = queryset.annotate(
+            final_price_calc=ExpressionWrapper(
+                F("price") - (F("price") * F("discount") / 100),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
+        )
+
+        min_price = request.GET.get("min_price")
+        max_price = request.GET.get("max_price")
+        order_by = request.GET.get("order_by")
+
+        if min_price:
+            queryset = queryset.filter(final_price_calc__gte=min_price)
+
+        if max_price:
+            queryset = queryset.filter(final_price_calc__lte=max_price)
+
+        if order_by == "price_asc":
+            queryset = queryset.order_by("final_price_calc", "id")
+
+        elif order_by == "price_desc":
+            queryset = queryset.order_by("-final_price_calc", "-id")
+
+        else:
+            queryset = queryset.order_by("-id")
+
+        serializer = OutfitSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class OutfitDetailAPIView(APIView):
+    def get(self, request, slug):
+        outfit = get_object_or_404(
+            Outfit.objects.prefetch_related(
+                "items",
+                "items__product",
+                "items__product__images",
+            ),
+            slug=slug,
+            is_active=True
+        )
+
+        serializer = OutfitSerializer(outfit)
         return Response(serializer.data)
