@@ -122,6 +122,7 @@ class Product(TimeStampedModel):
         USA = "usa", "США"
         EUROPE = "europe", "Европа"
         RUSSIA = "russia", "Россия"
+        UZBEKISTAN = "uzbekistan", "Узбекистан"
 
     region = models.CharField(
         max_length=20,

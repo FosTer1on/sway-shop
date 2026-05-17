@@ -140,7 +140,7 @@ class ProductAdmin(TranslationAdmin):
             "fields": (
                 "name",
                 "slug",
-                "store", "category", "brand",
+                "store", "category", "brand", "region",
                 "description",
             )
         }),
