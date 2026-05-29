@@ -1,4 +1,4 @@
-from django.db.models import F, ExpressionWrapper, DecimalField
+from django.db.models import F, ExpressionWrapper, DecimalField, Count
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -11,6 +11,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 # ✅ Кастомная пагинация (по 30 товаров)
 class ProductPagination(PageNumberPagination):
+    page_size = 12
+
+class OutfitPagination(PageNumberPagination):
     page_size = 12
 
 
@@ -189,17 +192,14 @@ class CategorySizesView(APIView):
 
 class OutfitListAPIView(APIView):
     def get(self, request):
-        queryset = Outfit.objects.filter(is_active=True).prefetch_related(
-            "items",
-            "items__product",
-            "items__product__images",
-        )
+        queryset = Outfit.objects.filter(is_active=True)
 
         queryset = queryset.annotate(
             final_price_calc=ExpressionWrapper(
                 F("price") - (F("price") * F("discount") / 100),
                 output_field=DecimalField(max_digits=10, decimal_places=2)
-            )
+            ),
+            products_count=Count("items")
         )
 
         min_price = request.GET.get("min_price")
@@ -214,15 +214,16 @@ class OutfitListAPIView(APIView):
 
         if order_by == "price_asc":
             queryset = queryset.order_by("final_price_calc", "id")
-
         elif order_by == "price_desc":
             queryset = queryset.order_by("-final_price_calc", "-id")
-
         else:
             queryset = queryset.order_by("-id")
 
-        serializer = OutfitSerializer(queryset, many=True)
-        return Response(serializer.data)
+        paginator = OutfitPagination()
+        page = paginator.paginate_queryset(queryset, request)
+
+        serializer = OutfitListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class OutfitDetailAPIView(APIView):

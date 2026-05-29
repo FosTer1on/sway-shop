@@ -143,6 +143,38 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         return f"{int(final):,}".replace(",", " ")
 
 
+
+class OutfitListSerializer(serializers.ModelSerializer):
+    products_count = serializers.IntegerField(read_only=True)
+    price = serializers.SerializerMethodField()
+    final_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Outfit
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "image",
+            "description",
+            "price",
+            "final_price",
+            "discount",
+            "products_count",
+        ]
+
+    def get_price(self, obj):
+        return f"{int(obj.price):,}".replace(",", " ")
+
+    def get_final_price(self, obj):
+        final = getattr(
+            obj,
+            "final_price_calc",
+            obj.price - (obj.price * obj.discount / 100)
+        )
+        return f"{int(final):,}".replace(",", " ")
+
+
 class OutfitItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer()
 
