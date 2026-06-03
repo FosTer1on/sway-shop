@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 class ProductPagination(PageNumberPagination):
     page_size = 12
 
+
 class OutfitPagination(PageNumberPagination):
     page_size = 12
 
@@ -43,6 +44,7 @@ class ProductListAPIView(APIView):
         sizes = request.GET.getlist("size")
 
         region = request.GET.get("region")
+        gender = request.GET.get("gender")
 
         min_price = request.GET.get("min_price")
         max_price = request.GET.get("max_price")
@@ -68,6 +70,18 @@ class ProductListAPIView(APIView):
         if region:
             queryset = queryset.filter(region__iexact=region)
 
+        if gender in ["male", "female"]:
+            queryset = queryset.filter(
+                gender__in=[gender, Product.Gender.UNISEX])
+        elif gender == "all":
+            pass
+        else:
+            user_gender = getattr(request.user, "gender", None)
+
+            if request.user.is_authenticated and user_gender in ["male", "female"]:
+                queryset = queryset.filter(
+                    gender__in=[user_gender, Product.Gender.UNISEX])
+
         if min_price:
             queryset = queryset.filter(final_price_calc__gte=min_price)
 
@@ -82,7 +96,7 @@ class ProductListAPIView(APIView):
 
         has_filters = any([
             stores, brands, categories, sizes,
-            region,
+            region, gender,
             min_price, max_price,
             discount_only, status_param
         ])
@@ -158,21 +172,24 @@ class ProductSearchAPIView(APIView):
 
 class StoreListView(APIView):
     def get(self, request):
-        stores = Store.objects.only("id", "name", "slug", "created_at", "updated_at")
+        stores = Store.objects.only(
+            "id", "name", "slug", "created_at", "updated_at")
         serializer = StoreSerializer(stores, many=True)
         return Response(serializer.data)
 
 
 class BrandListView(APIView):
     def get(self, request):
-        brands = Brand.objects.only("id", "name", "slug", "icon", "created_at", "updated_at")
+        brands = Brand.objects.only(
+            "id", "name", "slug", "icon", "created_at", "updated_at")
         serializer = BrandSerializer(brands, many=True)
         return Response(serializer.data)
 
 
 class CategoryListView(APIView):
     def get(self, request):
-        categories = Category.objects.only("id", "name", "slug", "icon", "created_at", "updated_at")
+        categories = Category.objects.only(
+            "id", "name", "slug", "icon", "created_at", "updated_at")
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data)
 
@@ -205,6 +222,18 @@ class OutfitListAPIView(APIView):
         min_price = request.GET.get("min_price")
         max_price = request.GET.get("max_price")
         order_by = request.GET.get("order_by")
+
+        gender = request.GET.get("gender")
+
+        if gender in ["male", "female"]:
+            queryset = queryset.filter(gender__in=[gender, Outfit.Gender.UNISEX])
+        elif gender == "all":
+            pass
+        else:
+            user_gender = getattr(request.user, "gender", None)
+
+            if request.user.is_authenticated and user_gender in ["male", "female"]:
+                queryset = queryset.filter(gender__in=[user_gender, Outfit.Gender.UNISEX])
 
         if min_price:
             queryset = queryset.filter(final_price_calc__gte=min_price)

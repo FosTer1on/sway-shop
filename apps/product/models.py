@@ -24,7 +24,7 @@ class SizeType(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = _("Название размера")
         verbose_name_plural = _("Название размеров")
@@ -34,7 +34,8 @@ class SizeType(models.Model):
 # 📏 Размеры
 # ========================
 class Size(models.Model):
-    size_type = models.ForeignKey(SizeType, on_delete=models.CASCADE, related_name="sizes")
+    size_type = models.ForeignKey(
+        SizeType, on_delete=models.CASCADE, related_name="sizes")
     name = models.CharField(max_length=50)
 
     class Meta:
@@ -53,10 +54,13 @@ class Size(models.Model):
 # 🏷 Категории
 # ========================
 class Category(TimeStampedModel):
-    name = models.CharField(_("Название категории"), max_length=255, unique=True)
+    name = models.CharField(_("Название категории"),
+                            max_length=255, unique=True)
     slug = models.SlugField(max_length=265, unique=True, blank=True)
-    icon = models.ImageField(upload_to="category_icons/", blank=True, null=True)
-    size_type = models.ForeignKey(SizeType, on_delete=models.SET_NULL, null=True, blank=True)
+    icon = models.ImageField(
+        upload_to="category_icons/", blank=True, null=True)
+    size_type = models.ForeignKey(
+        SizeType, on_delete=models.SET_NULL, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -76,7 +80,7 @@ class Category(TimeStampedModel):
 # ========================
 class Brand(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(max_length=255,unique=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
     icon = models.ImageField(upload_to="brand_icons/", blank=True, null=True)
 
     def save(self, *args, **kwargs):
@@ -94,7 +98,7 @@ class Brand(TimeStampedModel):
 
 class Store(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(max_length=265,unique=True, blank=True)
+    slug = models.SlugField(max_length=265, unique=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -103,7 +107,7 @@ class Store(TimeStampedModel):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = _("Магазин")
         verbose_name_plural = _("Магазины")
@@ -124,18 +128,34 @@ class Product(TimeStampedModel):
         RUSSIA = "russia", "Россия"
         UZBEKISTAN = "uzbekistan", "Узбекистан"
 
+    class Gender(models.TextChoices):
+        MALE = "male", _("Мужской")
+        FEMALE = "female", _("Женский")
+        UNISEX = "unisex", _("Унисекс")
+
+
+    name = models.CharField(_("Название"), max_length=255)
+    slug = models.SlugField(_("Slug"), max_length=265, unique=True, blank=True)
+
+    store = models.ForeignKey(
+        "Store", on_delete=models.CASCADE, related_name="products")
+    category = models.ForeignKey(
+        "Category", on_delete=models.CASCADE, related_name="products")
+    brand = models.ForeignKey(
+        "Brand", on_delete=models.SET_NULL, null=True, blank=True)
+
+    
+    gender = models.CharField(
+        _("Пол"),
+        max_length=10,
+        choices=Gender.choices,
+        default=Gender.UNISEX
+    )
     region = models.CharField(
         max_length=20,
         choices=Region.choices,
         default=Region.CHINA
     )
-
-    name = models.CharField(_("Название"), max_length=255)
-    slug = models.SlugField(_("Slug"), max_length=265, unique=True, blank=True)
-
-    store = models.ForeignKey("Store", on_delete=models.CASCADE, related_name="products")
-    category = models.ForeignKey("Category", on_delete=models.CASCADE, related_name="products")
-    brand = models.ForeignKey("Brand", on_delete=models.SET_NULL, null=True, blank=True)
 
     description = models.TextField(_("Описание"), max_length=2000, blank=True)
 
@@ -176,12 +196,12 @@ class Product(TimeStampedModel):
         verbose_name_plural = _("Товары")
 
 
-
 # ========================
 # 📦 Количество по размеру
 # ========================
 class ProductSize(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="sizes")
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="sizes")
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=0)
 
@@ -200,7 +220,8 @@ class ProductSize(models.Model):
 # 🖼 Фото
 # ========================
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="products")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -212,12 +233,26 @@ class ProductImage(models.Model):
         verbose_name_plural = _("Фотки продукта")
 
 # & Outfits
+
+
 class Outfit(models.Model):
+    class Gender(models.TextChoices):
+        MALE = "male", _("Мужской")
+        FEMALE = "female", _("Женский")
+        UNISEX = "unisex", _("Унисекс")
+        
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=265, unique=True, blank=True)
 
     image = models.ImageField(upload_to="outfits/")
     description = models.TextField(blank=True)
+
+    gender = models.CharField(
+        _("Пол"),
+        max_length=10,
+        choices=Gender.choices,
+        default=Gender.UNISEX
+    )
 
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.PositiveIntegerField(default=0)
@@ -242,7 +277,8 @@ class Outfit(models.Model):
 
 
 class OutfitItem(models.Model):
-    outfit = models.ForeignKey(Outfit, on_delete=models.CASCADE, related_name="items")
+    outfit = models.ForeignKey(
+        Outfit, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     # порядок (чтобы кепка была сверху, например)

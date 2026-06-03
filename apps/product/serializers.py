@@ -59,6 +59,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     final_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     region = serializers.CharField(source="get_region_display")
+    gender_display = serializers.CharField(source="get_gender_display")
 
     class Meta:
         model = Product
@@ -74,6 +75,8 @@ class ProductListSerializer(serializers.ModelSerializer):
             "brand",
             "store",
             "region",
+            "gender"
+            "gender_display"
             "images",
         ]
 
@@ -106,6 +109,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     final_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     region = serializers.CharField(source="get_region_display")
+    gender_display = serializers.CharField(source="get_gender_display")
 
     class Meta:
         model = Product
@@ -125,6 +129,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "store",
             "category",
             "region",
+            "gender",
+            "gender_display",
             "images",
             "sizes",
             "created_at",
@@ -143,11 +149,11 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         return f"{int(final):,}".replace(",", " ")
 
 
-
 class OutfitListSerializer(serializers.ModelSerializer):
     products_count = serializers.IntegerField(read_only=True)
     price = serializers.SerializerMethodField()
     final_price = serializers.SerializerMethodField()
+    gender_display = serializers.CharField(source="get_gender_display")
 
     class Meta:
         model = Outfit
@@ -160,6 +166,8 @@ class OutfitListSerializer(serializers.ModelSerializer):
             "price",
             "final_price",
             "discount",
+            "gender",
+            "gender_display",
             "products_count",
         ]
 
@@ -188,6 +196,7 @@ class OutfitSerializer(serializers.ModelSerializer):
 
     price = serializers.SerializerMethodField()
     final_price = serializers.SerializerMethodField()
+    gender_display = serializers.CharField(source="get_gender_display")
 
     class Meta:
         model = Outfit
@@ -200,6 +209,8 @@ class OutfitSerializer(serializers.ModelSerializer):
             "price",
             "final_price",
             "discount",
+            "gender",
+            "gender_display",
             "items",
         ]
 
