@@ -118,10 +118,13 @@ class ProductAdmin(TranslationAdmin):
     list_display = (
         "admin_image_preview",
         "name",
+        "slug",
         "store",
         "price",
         "discount",
         "final_price",
+        "gender",
+        "region",
         "is_season",
         "is_active",
         "status",
@@ -133,14 +136,34 @@ class ProductAdmin(TranslationAdmin):
     inlines = [ProductImageInline, ProductSizeInline]
 
     # 🔹 Фильтры
-    list_filter = ("is_season", "is_active", "status")
+    list_filter = (
+        "gender",
+        "region",
+        "is_season",
+        "is_active",
+        "status",
+        "store",
+        "brand",
+        "category",
+    )
+    search_fields = (
+        "name",
+        "slug",
+        "store__name",
+        "brand__name",
+        "category__name",
+    )
 
     fieldsets = (
         ("Основная информация", {
             "fields": (
                 "name",
                 "slug",
-                "store", "category", "brand", "region",
+                "store",
+                "category",
+                "brand",
+                "region",
+                "gender",
                 "description",
             )
         }),
@@ -189,10 +212,94 @@ class ProductSizeAdmin(admin.ModelAdmin):
     list_filter = ("size__size_type", "product__store")
     search_fields = ("product__name", "size__name")
 
+
+class OutfitItemInline(admin.TabularInline):
+    model = OutfitItem
+    extra = 1
+    autocomplete_fields = ("product",)
+    fields = ("product", "order")
+
+
 @admin.register(Outfit)
-class Outfit(admin.ModelAdmin):
-    list_display = ("image", "title")
+class OutfitAdmin(admin.ModelAdmin):
+    list_display = (
+        "admin_image_preview",
+        "title",
+        "slug",
+        "price",
+        "discount",
+        "final_price",
+        "gender",
+        "is_active",
+    )
+
+    list_display_links = ("title",)
+
+    list_filter = (
+        "gender",
+        "is_active",
+    )
+
+    search_fields = (
+        "title",
+        "slug",
+        "items__product__name",
+        "items__product__slug",
+    )
+
+    readonly_fields = (
+        "slug",
+        "admin_image_preview",
+    )
+
+    fields = (
+        "title",
+        "slug",
+        "admin_image_preview",
+        "image",
+        "description",
+        "gender",
+        "price",
+        "discount",
+        "is_active",
+    )
+
+    inlines = [OutfitItemInline]
+
+    def admin_image_preview(self, obj):
+        if obj.image and getattr(obj.image, "name", None):
+            url = build_public_url(obj.image.name)
+            return format_html(
+                '<img src="{}" width="80" style="border-radius:6px"/>',
+                url
+            )
+        return "—"
+
+    admin_image_preview.short_description = "Фото"
+
 
 @admin.register(OutfitItem)
-class OutfitItem(admin.ModelAdmin):
-    list_display = ("product__name",)
+class OutfitItemAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "outfit",
+        "product",
+        "order",
+    )
+
+    list_filter = (
+        "outfit",
+        "product__gender",
+    )
+
+    search_fields = (
+        "outfit__title",
+        "outfit__slug",
+        "product__name",
+        "product__slug",
+    )
+
+    autocomplete_fields = (
+        "outfit",
+        "product",
+    )

@@ -75,8 +75,8 @@ class ProductListSerializer(serializers.ModelSerializer):
             "brand",
             "store",
             "region",
-            "gender"
-            "gender_display"
+            "gender",
+            "gender_display",
             "images",
         ]
 
