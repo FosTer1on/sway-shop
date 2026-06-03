@@ -8,6 +8,11 @@ class RegisterSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15)
     password = serializers.CharField(min_length=6, write_only=True)
 
+    gender = serializers.ChoiceField(
+        choices=["male", "female"],
+        required=True
+    )
+
     def validate_phone_number(self, value):
         if not value.startswith("+998"):
             raise serializers.ValidationError("Неверный формат номера")

@@ -1,9 +1,15 @@
-import random, string
+import random
+import string
 from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.conf import settings
+
+
+class UserGenderChoices(models.TextChoices):
+    MALE = "male", "Мужской"
+    FEMALE = "female", "Женский"
 
 
 class UserManager(BaseUserManager):
@@ -22,9 +28,17 @@ class UserManager(BaseUserManager):
 
         return self.create_user(phone_number, password, **extra_fields)
 
+
 class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50)
     phone_number = models.CharField(max_length=15, unique=True)
+    gender = models.CharField(
+        max_length=10,
+        choices=UserGenderChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="Пол"
+    )
     is_active = models.BooleanField(default=True)  # активен ли пользователь
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -40,4 +54,3 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
-

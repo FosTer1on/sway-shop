@@ -33,6 +33,7 @@ class RegisterView(APIView):
             phone_number=phone,
             first_name=serializer.validated_data.get("first_name"),
             password=serializer.validated_data.get("password"),
+            gender=serializer.validated_data.get("gender"),
         )
 
         user.is_active = True
@@ -50,6 +51,7 @@ class RegisterView(APIView):
                     "id": user.id,
                     "first_name": user.first_name,
                     "phone_number": user.phone_number,
+                    "gender": user.gender,
                 }
             },
             status=status.HTTP_201_CREATED
@@ -86,6 +88,7 @@ class LoginView(APIView):
                 "id": user.id,
                 "first_name": user.first_name,
                 "phone_number": user.phone_number,
+                "gender": user.gender,
             }
         })
 
@@ -118,6 +121,3 @@ class DeleteAccountView(APIView):
         user = request.user
         user.delete()
         return Response({"detail": "Аккаунт был успешно удалён."}, status=status.HTTP_204_NO_CONTENT)
-
-
-
