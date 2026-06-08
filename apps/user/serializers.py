@@ -29,3 +29,22 @@ class RegisterSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
     password = serializers.CharField()
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=15)
+    new_password = serializers.CharField(min_length=6, write_only=True)
+    confirm_password = serializers.CharField(min_length=6, write_only=True)
+
+    def validate_phone_number(self, value):
+        if not value.startswith("+998"):
+            raise serializers.ValidationError("Неверный формат номера")
+        return value
+
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError({
+                "confirm_password": "Пароли не совпадают"
+            })
+
+        return attrs

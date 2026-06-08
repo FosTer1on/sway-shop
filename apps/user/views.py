@@ -121,3 +121,33 @@ class DeleteAccountView(APIView):
         user = request.user
         user.delete()
         return Response({"detail": "Аккаунт был успешно удалён."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class PasswordResetView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        phone = serializer.validated_data["phone_number"]
+        new_password = serializer.validated_data["new_password"]
+
+        try:
+            user = User.objects.get(phone_number=phone)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "Пользователь не найден"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        user.set_password(new_password)
+        user.is_active = True
+        user.save(update_fields=["password", "is_active"])
+
+        return Response(
+            {"detail": "Пароль успешно изменён"},
+            status=status.HTTP_200_OK
+        )
