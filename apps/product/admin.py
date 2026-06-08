@@ -122,6 +122,10 @@ class ProductAdmin(TranslationAdmin):
         "store",
         "price",
         "discount",
+        "cargo",
+        "markup",
+        "weight",
+        "delivery_time",
         "final_price",
         "gender",
         "region",
@@ -166,6 +170,9 @@ class ProductAdmin(TranslationAdmin):
                 "gender",
                 "description",
             )
+        }),
+        ("Логистика и наценка", {
+            "fields": ("cargo", "markup", "weight", "delivery_time")
         }),
         ("Цены и скидки", {
             "fields": ("price", "discount")
@@ -228,6 +235,10 @@ class OutfitAdmin(admin.ModelAdmin):
         "slug",
         "price",
         "discount",
+        "cargo",
+        "markup",
+        "weight",
+        "delivery_time",
         "final_price",
         "gender",
         "is_active",
@@ -261,6 +272,10 @@ class OutfitAdmin(admin.ModelAdmin):
         "gender",
         "price",
         "discount",
+        "cargo",
+        "markup",
+        "weight",
+        "delivery_time",
         "is_active",
     )
 

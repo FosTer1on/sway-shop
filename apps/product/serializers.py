@@ -78,6 +78,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "gender",
             "gender_display",
             "images",
+            "delivery_time",
         ]
 
     def get_price(self, obj):
@@ -135,6 +136,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "sizes",
             "created_at",
             "updated_at",
+            "delivery_time",
         ]
 
     def get_price(self, obj):
@@ -169,6 +171,7 @@ class OutfitListSerializer(serializers.ModelSerializer):
             "gender",
             "gender_display",
             "products_count",
+            "delivery_time",
         ]
 
     def get_price(self, obj):
@@ -212,6 +215,7 @@ class OutfitSerializer(serializers.ModelSerializer):
             "gender",
             "gender_display",
             "items",
+            "delivery_time",
         ]
 
     def get_price(self, obj):

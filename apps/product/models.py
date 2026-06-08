@@ -133,7 +133,6 @@ class Product(TimeStampedModel):
         FEMALE = "female", _("Женский")
         UNISEX = "unisex", _("Унисекс")
 
-
     name = models.CharField(_("Название"), max_length=255)
     slug = models.SlugField(_("Slug"), max_length=265, unique=True, blank=True)
 
@@ -144,7 +143,6 @@ class Product(TimeStampedModel):
     brand = models.ForeignKey(
         "Brand", on_delete=models.SET_NULL, null=True, blank=True)
 
-    
     gender = models.CharField(
         _("Пол"),
         max_length=10,
@@ -162,6 +160,34 @@ class Product(TimeStampedModel):
     price = models.DecimalField(_("Цена"), max_digits=10, decimal_places=2)
     discount = models.PositiveIntegerField(_("Скидка %"), default=0)
     quantity = models.PositiveIntegerField(_("Количество"), default=0)
+
+    cargo = models.DecimalField(
+        _("Карго"),
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    markup = models.DecimalField(
+        _("Наценка"),
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    weight = models.DecimalField(
+        _("Вес"),
+        max_digits=6,
+        decimal_places=2,
+        default=0,
+        help_text=_("Вес в кг")
+    )
+
+    delivery_time = models.CharField(
+        _("Время доставки"),
+        max_length=100,
+        default="10-15 дней"
+    )
 
     # 🔹 Новые поля
     is_active = models.BooleanField(_("Активен"), default=True)
@@ -240,7 +266,7 @@ class Outfit(models.Model):
         MALE = "male", _("Мужской")
         FEMALE = "female", _("Женский")
         UNISEX = "unisex", _("Унисекс")
-        
+
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=265, unique=True, blank=True)
 
@@ -256,6 +282,33 @@ class Outfit(models.Model):
 
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.PositiveIntegerField(default=0)
+    cargo = models.DecimalField(
+        _("Карго"),
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    markup = models.DecimalField(
+        _("Наценка"),
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    weight = models.DecimalField(
+        _("Вес"),
+        max_digits=6,
+        decimal_places=2,
+        default=0,
+        help_text=_("Вес в кг")
+    )
+
+    delivery_time = models.CharField(
+        _("Время доставки"),
+        max_length=100,
+        default="10-15 дней"
+    )
 
     is_active = models.BooleanField(default=True)
 
