@@ -110,6 +110,23 @@ class ProductSizeInline(admin.TabularInline):
         return field
 
 
+@admin.register(SizeChart)
+class SizeChartAdmin(admin.ModelAdmin):
+    list_display = ("name", "title", "created_at", "updated_at")
+    search_fields = ("name", "title")
+    readonly_fields = ("created_at", "updated_at")
+
+    fields = (
+        "name",
+        "title",
+        "note",
+        "columns",
+        "rows",
+        "created_at",
+        "updated_at",
+    )
+
+
 # ==========================
 # 🔹 PRODUCT (с переводом)
 # ==========================
@@ -166,6 +183,7 @@ class ProductAdmin(TranslationAdmin):
                 "store",
                 "category",
                 "brand",
+                "size_chart",
                 "region",
                 "gender",
                 "description",

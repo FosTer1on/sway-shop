@@ -102,6 +102,12 @@ class ProductSizeSerializer(serializers.ModelSerializer):
         fields = ["size_id", "size", "quantity"]
 
 
+class SizeChartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SizeChart
+        fields = ["id", "name", "title", "note", "columns", "rows"]
+
+
 class ProductDetailSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     sizes = ProductSizeSerializer(many=True, read_only=True)
@@ -111,6 +117,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     region = serializers.CharField(source="get_region_display")
     gender_display = serializers.CharField(source="get_gender_display")
+    size_chart = SizeChartSerializer(read_only=True)
 
     class Meta:
         model = Product
@@ -130,13 +137,14 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "store",
             "category",
             "region",
+            "delivery_time",
             "gender",
             "gender_display",
+            "size_chart",
             "images",
             "sizes",
             "created_at",
             "updated_at",
-            "delivery_time",
         ]
 
     def get_price(self, obj):

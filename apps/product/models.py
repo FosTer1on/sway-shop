@@ -38,14 +38,12 @@ class Size(models.Model):
         SizeType, on_delete=models.CASCADE, related_name="sizes")
     name = models.CharField(max_length=50)
 
-    class Meta:
-        unique_together = ('size_type', 'name')
-        ordering = ['id']
-
     def __str__(self):
         return f"{self.name} ({self.size_type.name})"
 
     class Meta:
+        unique_together = ('size_type', 'name')
+        ordering = ['id']
         verbose_name = _("Размер")
         verbose_name_plural = _("Размеры")
 
@@ -113,6 +111,42 @@ class Store(TimeStampedModel):
         verbose_name_plural = _("Магазины")
 
 
+class SizeChart(models.Model):
+    name = models.CharField(_("Название шаблона"), max_length=255, unique=True)
+
+    title = models.CharField(
+        _("Заголовок"),
+        max_length=255,
+        default="Таблица размеров"
+    )
+
+    note = models.TextField(
+        _("Примечание"),
+        blank=True,
+        null=True
+    )
+
+    columns = models.JSONField(
+        _("Колонки"),
+        default=list
+    )
+
+    rows = models.JSONField(
+        _("Строки"),
+        default=list
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("Таблица размеров")
+        verbose_name_plural = _("Таблицы размеров")
+
+    def __str__(self):
+        return self.name
+
+
 # ========================
 # 🛍️ Товары
 # ========================
@@ -142,6 +176,15 @@ class Product(TimeStampedModel):
         "Category", on_delete=models.CASCADE, related_name="products")
     brand = models.ForeignKey(
         "Brand", on_delete=models.SET_NULL, null=True, blank=True)
+
+    size_chart = models.ForeignKey(
+        "SizeChart",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="products",
+        verbose_name=_("Таблица размеров")
+    )
 
     gender = models.CharField(
         _("Пол"),
@@ -231,13 +274,11 @@ class ProductSize(models.Model):
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=0)
 
-    class Meta:
-        unique_together = ('product', 'size')
-
     def __str__(self):
         return f"{self.product.name} — {self.size.name}: {self.quantity}"
 
     class Meta:
+        unique_together = ('product', 'size')
         verbose_name = _("Размер продукта")
         verbose_name_plural = _("Размеры продукта")
 

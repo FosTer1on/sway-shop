@@ -126,6 +126,7 @@ class ProductDetailAPIView(APIView):
                 "brand",
                 "store",
                 "category",
+                "size_chart",
             ).prefetch_related(
                 "images",
                 "sizes",
