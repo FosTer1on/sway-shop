@@ -115,7 +115,6 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     store = StoreSerializer(read_only=True)
     final_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
-    region = serializers.CharField(source="get_region_display")
     gender_display = serializers.CharField(source="get_gender_display")
     size_chart = SizeChartSerializer(read_only=True)
 

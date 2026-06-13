@@ -1,4 +1,6 @@
 from django.utils import translation
+import time
+import logging
 
 class QueryLangMiddleware:
     """
@@ -24,3 +26,52 @@ class QueryLangMiddleware:
         response = self.get_response(request)
         translation.deactivate()
         return response
+
+
+
+logger = logging.getLogger("requests")
+
+
+class RequestLoggingMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        start_time = time.perf_counter()
+
+        response = self.get_response(request)
+
+        duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
+
+        user_id = None
+        if hasattr(request, "user") and request.user.is_authenticated:
+            user_id = request.user.id
+
+        ip = self.get_client_ip(request)
+
+        level = logging.INFO
+        if response.status_code >= 500:
+            level = logging.ERROR
+        elif response.status_code >= 400:
+            level = logging.WARNING
+
+        logger.log(
+            level,
+            "%s %s %s %sms user=%s ip=%s",
+            request.method,
+            request.get_full_path(),
+            response.status_code,
+            duration_ms,
+            user_id,
+            ip,
+        )
+
+        return response
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        if x_forwarded_for:
+            return x_forwarded_for.split(",")[0].strip()
+
+        return request.META.get("REMOTE_ADDR")
+
