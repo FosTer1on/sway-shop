@@ -2,6 +2,7 @@ from django.utils import translation
 import time
 import logging
 
+
 class QueryLangMiddleware:
     """
     Активирует язык из ?lang=ru/uz или заголовка Accept-Language.
@@ -28,7 +29,6 @@ class QueryLangMiddleware:
         return response
 
 
-
 logger = logging.getLogger("requests")
 
 
@@ -41,7 +41,9 @@ class RequestLoggingMiddleware:
 
         response = self.get_response(request)
 
-        duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
+        request_id = request.headers.get("X-Request-ID", "-")
+
+        duration_ms = round((time.perf_counter() - start_time) * 1000)
 
         user_id = None
         if hasattr(request, "user") and request.user.is_authenticated:
@@ -57,13 +59,14 @@ class RequestLoggingMiddleware:
 
         logger.log(
             level,
-            "%s %s %s %sms user=%s ip=%s",
+            "%s %s %s %sms user=%s ip=%s request_id=%s",
             request.method,
             request.get_full_path(),
             response.status_code,
             duration_ms,
             user_id,
             ip,
+            request_id,
         )
 
         return response
@@ -74,4 +77,3 @@ class RequestLoggingMiddleware:
             return x_forwarded_for.split(",")[0].strip()
 
         return request.META.get("REMOTE_ADDR")
-
