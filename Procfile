@@ -1,2 +1,1 @@
-web: gunicorn wear_and_go.wsgi
 web: python manage.py migrate --settings=wear_and_go.settings.prod && python manage.py collectstatic --noinput --settings=wear_and_go.settings.prod && gunicorn wear_and_go.wsgi:application
