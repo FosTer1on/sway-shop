@@ -1,4 +1,4 @@
-from django.db.models import F, ExpressionWrapper, DecimalField, Count
+from django.db.models import F, ExpressionWrapper, DecimalField, Count, Q
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -9,16 +9,17 @@ from .serializers import *
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
-# ✅ Кастомная пагинация (по 30 товаров)
+# Кастомная пагинация товаров (по 30 товаров)
 class ProductPagination(PageNumberPagination):
-    page_size = 12
+    page_size = 30
 
 
+# Кастомная пагинация аутфитов (по 30 товаров)
 class OutfitPagination(PageNumberPagination):
-    page_size = 12
+    page_size = 30
 
 
-# ✅ 1. Получение всех товаров
+# Получение всех товаров + фильтрация
 class ProductListAPIView(APIView):
     def get(self, request):
         queryset = Product.objects.filter(is_active=True).select_related(
@@ -46,6 +47,8 @@ class ProductListAPIView(APIView):
         region = request.GET.get("region")
         gender = request.GET.get("gender")
 
+        search = request.GET.get("search", "").strip()
+
         min_price = request.GET.get("min_price")
         max_price = request.GET.get("max_price")
         discount_only = request.GET.get("discount")
@@ -66,6 +69,25 @@ class ProductListAPIView(APIView):
                 sizes__size__id__in=sizes,
                 sizes__quantity__gt=0
             ).distinct()
+        
+        if search:
+            search_variants = {
+                search,
+                search.lower(),
+                search.upper(),
+                search.capitalize(),
+                search.title(),
+            }
+
+            query = Q()
+
+            for value in search_variants:
+                query |= Q(name__icontains=value)
+                query |= Q(name_ru__icontains=value)
+                query |= Q(name_uz__icontains=value)
+                query |= Q(brand__name__icontains=value)
+
+            queryset = queryset.filter(query).distinct()
 
         if region:
             queryset = queryset.filter(region__iexact=region)
@@ -96,7 +118,7 @@ class ProductListAPIView(APIView):
 
         has_filters = any([
             stores, brands, categories, sizes,
-            region, gender,
+            region, gender, search,
             min_price, max_price,
             discount_only, status_param
         ])
@@ -118,7 +140,7 @@ class ProductListAPIView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
 
-# ✅ 2. Получение конкретного товара по slug
+# Получение конкретного товара по slug
 class ProductDetailAPIView(APIView):
     def get(self, request, slug):
         try:
@@ -139,38 +161,7 @@ class ProductDetailAPIView(APIView):
         return Response(serializer.data)
 
 
-class ProductSearchAPIView(APIView):
-    def get(self, request):
-        query = request.GET.get("q")
-
-        if not query:
-            return Response({"results": []})
-
-        queryset = Product.objects.filter(
-            is_active=True,
-            name__icontains=query
-        ).select_related(
-            "store",
-            "brand",
-            "category",
-        ).prefetch_related(
-            "images",
-            "sizes",
-            "sizes__size",
-        ).annotate(
-            final_price_calc=ExpressionWrapper(
-                F("price") - (F("price") * F("discount") / 100),
-                output_field=DecimalField(max_digits=10, decimal_places=2)
-            )
-        ).order_by("-created_at")
-
-        paginator = ProductPagination()
-        result_page = paginator.paginate_queryset(queryset, request)
-        serializer = ProductListSerializer(result_page, many=True)
-
-        return paginator.get_paginated_response(serializer.data)
-
-
+# Получение всех магазинов
 class StoreListView(APIView):
     def get(self, request):
         stores = Store.objects.only(
@@ -179,6 +170,7 @@ class StoreListView(APIView):
         return Response(serializer.data)
 
 
+# Получение всех брендов
 class BrandListView(APIView):
     def get(self, request):
         brands = Brand.objects.only(
@@ -187,6 +179,7 @@ class BrandListView(APIView):
         return Response(serializer.data)
 
 
+# Получение всех категорий
 class CategoryListView(APIView):
     def get(self, request):
         categories = Category.objects.only(
@@ -195,6 +188,7 @@ class CategoryListView(APIView):
         return Response(serializer.data)
 
 
+# Получение всех размеров категории
 class CategorySizesView(APIView):
     def get(self, request, slug):
         try:
@@ -208,6 +202,7 @@ class CategorySizesView(APIView):
         return Response(serializer.data)
 
 
+# Получение всех аутфитов
 class OutfitListAPIView(APIView):
     def get(self, request):
         queryset = Outfit.objects.filter(is_active=True)
@@ -256,6 +251,7 @@ class OutfitListAPIView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
 
+# Получение аутфита по slug
 class OutfitDetailAPIView(APIView):
     def get(self, request, slug):
         outfit = get_object_or_404(
