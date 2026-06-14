@@ -1,4 +1,6 @@
-from django.db.models import F, ExpressionWrapper, DecimalField, Count, Q
+from django.db.models import F, ExpressionWrapper, DecimalField, Count, Q, CharField, Value
+from django.db.models.functions import MD5, Cast, Concat
+from datetime import date
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -69,7 +71,7 @@ class ProductListAPIView(APIView):
                 sizes__size__id__in=sizes,
                 sizes__quantity__gt=0
             ).distinct()
-        
+
         if search:
             search_variants = {
                 search,
@@ -118,7 +120,7 @@ class ProductListAPIView(APIView):
 
         has_filters = any([
             stores, brands, categories, sizes,
-            region, gender, search,
+            region, gender!= "all", search,
             min_price, max_price,
             discount_only, status_param
         ])
@@ -129,7 +131,17 @@ class ProductListAPIView(APIView):
             queryset = queryset.order_by("-final_price_calc", "-id")
         else:
             if not has_filters:
-                queryset = queryset.order_by("-is_season", "created_at", "id")
+                daily_seed = date.today().strftime("%Y%m%d")
+
+                queryset = queryset.annotate(
+                    daily_random=MD5(
+                        Concat(
+                            Value(daily_seed),
+                            Cast("id", output_field=CharField()),
+                            output_field=CharField(),
+                        )
+                    )
+                ).order_by("-is_season", "daily_random")
             else:
                 queryset = queryset.order_by("created_at", "id")
 
@@ -222,14 +234,16 @@ class OutfitListAPIView(APIView):
         gender = request.GET.get("gender")
 
         if gender in ["male", "female"]:
-            queryset = queryset.filter(gender__in=[gender, Outfit.Gender.UNISEX])
+            queryset = queryset.filter(
+                gender__in=[gender, Outfit.Gender.UNISEX])
         elif gender == "all":
             pass
         else:
             user_gender = getattr(request.user, "gender", None)
 
             if request.user.is_authenticated and user_gender in ["male", "female"]:
-                queryset = queryset.filter(gender__in=[user_gender, Outfit.Gender.UNISEX])
+                queryset = queryset.filter(
+                    gender__in=[user_gender, Outfit.Gender.UNISEX])
 
         if min_price:
             queryset = queryset.filter(final_price_calc__gte=min_price)
@@ -237,12 +251,31 @@ class OutfitListAPIView(APIView):
         if max_price:
             queryset = queryset.filter(final_price_calc__lte=max_price)
 
+        has_filters = any([
+            gender != "all",
+            min_price,
+            max_price,
+        ])
+
         if order_by == "price_asc":
             queryset = queryset.order_by("final_price_calc", "id")
         elif order_by == "price_desc":
             queryset = queryset.order_by("-final_price_calc", "-id")
         else:
-            queryset = queryset.order_by("-id")
+            if not has_filters:
+                daily_seed = date.today().strftime("%Y%m%d")
+
+                queryset = queryset.annotate(
+                    daily_random=MD5(
+                        Concat(
+                            Value(daily_seed),
+                            Cast("id", output_field=CharField()),
+                            output_field=CharField(),
+                        )
+                    )
+                ).order_by("daily_random")
+            else:
+                queryset = queryset.order_by("-id")
 
         paginator = OutfitPagination()
         page = paginator.paginate_queryset(queryset, request)
