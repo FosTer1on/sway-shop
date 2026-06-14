@@ -336,3 +336,36 @@ class OutfitItemAdmin(admin.ModelAdmin):
         "outfit",
         "product",
     )
+
+
+@admin.register(UserEvent)
+class UserEventAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "event_type",
+        "user",
+        "product_slug",
+        "search_query",
+        "ip_address",
+        "created_at",
+    )
+    list_filter = ("event_type", "created_at")
+    search_fields = (
+        "product_slug",
+        "search_query",
+        "user__phone",
+        "ip_address",
+    )
+    readonly_fields = (
+        "user",
+        "event_type",
+        "product",
+        "product_slug",
+        "search_query",
+        "page_url",
+        "session_id",
+        "metadata",
+        "ip_address",
+        "user_agent",
+        "created_at",
+    )

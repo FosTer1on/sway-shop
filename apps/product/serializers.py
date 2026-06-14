@@ -236,3 +236,19 @@ class OutfitSerializer(serializers.ModelSerializer):
         )
 
         return f"{int(final):,}".replace(",", " ")
+
+
+class UserEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserEvent
+        fields = [
+            "id",
+            "event_type",
+            "product_slug",
+            "search_query",
+            "page_url",
+            "session_id",
+            "metadata",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]

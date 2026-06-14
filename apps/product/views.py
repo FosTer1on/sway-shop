@@ -299,3 +299,35 @@ class OutfitDetailAPIView(APIView):
 
         serializer = OutfitSerializer(outfit)
         return Response(serializer.data)
+
+
+class UserEventCreateAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = UserEventSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        product_slug = serializer.validated_data.get("product_slug")
+        product = None
+
+        if product_slug:
+            product = Product.objects.filter(slug=product_slug).first()
+
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        ip_address = (
+            x_forwarded_for.split(",")[0].strip()
+            if x_forwarded_for
+            else request.META.get("REMOTE_ADDR")
+        )
+
+        serializer.save(
+            user=request.user if request.user.is_authenticated else None,
+            product=product,
+            ip_address=ip_address,
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
+
+        return Response({"detail": "Event saved"}, status=status.HTTP_201_CREATED)

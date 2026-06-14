@@ -14,4 +14,6 @@ urlpatterns = [
 
     path("outfits/", OutfitListAPIView.as_view()),
     path("outfits/<slug:slug>/", OutfitDetailAPIView.as_view()),
+
+    path("events/", UserEventCreateAPIView.as_view()),
 ]

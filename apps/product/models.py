@@ -380,3 +380,53 @@ class OutfitItem(models.Model):
 
     class Meta:
         ordering = ["order"]
+
+
+class UserEvent(models.Model):
+    class EventType(models.TextChoices):
+        PRODUCT_VIEW = "product_view", "Просмотр товара"
+        SEARCH = "search", "Поиск"
+        FAVORITE_ADD = "favorite_add", "Добавил в избранное"
+        FAVORITE_REMOVE = "favorite_remove", "Удалил из избранного"
+        CART_ADD = "cart_add", "Добавил в корзину"
+        CART_REMOVE = "cart_remove", "Удалил из корзины"
+        TELEGRAM_ORDER_CLICK = "telegram_order_click", "Клик Telegram-заказ"
+
+    user = models.ForeignKey(
+        "user.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="events",
+    )
+
+    event_type = models.CharField(max_length=50, choices=EventType.choices)
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="events",
+    )
+
+    product_slug = models.SlugField(max_length=265, blank=True, null=True)
+    search_query = models.CharField(max_length=255, blank=True, null=True)
+
+    page_url = models.TextField(blank=True, null=True)
+    session_id = models.CharField(max_length=100, blank=True, null=True)
+
+    metadata = models.JSONField(default=dict, blank=True)
+
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Событие пользователя"
+        verbose_name_plural = "События пользователей"
+
+    def __str__(self):
+        return f"{self.event_type} | {self.product_slug or self.search_query or self.user}"
