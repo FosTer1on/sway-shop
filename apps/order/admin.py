@@ -19,7 +19,6 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_method",
         "status",
         "products_total",
-        "service_fee_amount",
         "final_total",
         "created_at",
     )
@@ -40,7 +39,6 @@ class OrderAdmin(admin.ModelAdmin):
     readonly_fields = (
         "user",
         "products_total",
-        "service_fee_amount",
         "final_total",
         "created_at",
     )

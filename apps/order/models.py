@@ -28,10 +28,7 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="waiting_confirmation")
 
-    service_fee_percent = models.DecimalField(max_digits=5, decimal_places=2, default=5.0)
-
     products_total = models.DecimalField(max_digits=12, decimal_places=2)
-    service_fee_amount = models.DecimalField(max_digits=12, decimal_places=2)
     final_total = models.DecimalField(max_digits=12, decimal_places=2)
 
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from decimal import Decimal
 
 from .models import Cart, CartItem
 from apps.product.serializers import ProductListSerializer
@@ -36,7 +35,6 @@ class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True)
     items_total_price = serializers.SerializerMethodField()
     items_total_quantity = serializers.SerializerMethodField()
-    total_with_service = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
@@ -44,7 +42,6 @@ class CartSerializer(serializers.ModelSerializer):
             "items",
             "items_total_price",
             "items_total_quantity",
-            "total_with_service"
         ]
 
     def get_items_total_price(self, obj):
@@ -53,8 +50,4 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_items_total_quantity(self, obj):
         summary = sum(item.quantity for item in obj.items.all())
-        return f"{int(summary):,}".replace(",", " ")
-
-    def get_total_with_service(self, obj):
-        summary = sum(item.total_price for item in obj.items.all()) * Decimal("0.05") + sum(item.total_price for item in obj.items.all())
         return f"{int(summary):,}".replace(",", " ")

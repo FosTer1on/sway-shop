@@ -50,8 +50,6 @@ class OrderSerializer(serializers.ModelSerializer):
             "payment_method",
             "status",
             "products_total",
-            "service_fee_percent",
-            "service_fee_amount",
             "final_total",
             "items",
             "created_at",
@@ -69,7 +67,6 @@ class OrderListSerializer(serializers.ModelSerializer):
     items_count = serializers.IntegerField(source="items.count", read_only=True)
 
     products_total = serializers.SerializerMethodField()
-    service_fee_amount = serializers.SerializerMethodField()
     final_total = serializers.SerializerMethodField()
 
     class Meta:
@@ -80,16 +77,12 @@ class OrderListSerializer(serializers.ModelSerializer):
             "payment_method",
             "status",
             "products_total",
-            "service_fee_amount",
             "final_total",
             "created_at",
         ]
 
     def get_products_total(self, obj):
         return format_price(obj.products_total)
-
-    def get_service_fee_amount(self, obj):
-        return format_price(obj.service_fee_amount)
 
     def get_final_total(self, obj):
         return format_price(obj.final_total)
@@ -99,7 +92,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
 
     products_total = serializers.SerializerMethodField()
-    service_fee_amount = serializers.SerializerMethodField()
     final_total = serializers.SerializerMethodField()
 
     class Meta:
@@ -112,7 +104,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "payment_method",
             "status",
             "products_total",
-            "service_fee_amount",
             "final_total",
             "created_at",
             "items",
@@ -120,9 +111,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
     def get_products_total(self, obj):
         return format_price(obj.products_total)
-
-    def get_service_fee_amount(self, obj):
-        return format_price(obj.service_fee_amount)
 
     def get_final_total(self, obj):
         return format_price(obj.final_total)

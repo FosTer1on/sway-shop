@@ -38,9 +38,7 @@ class CreateOrderAPIView(APIView):
 
         # считаем суммы
         products_total = sum([item.total_price for item in cart.items.all()])
-
-        service_fee_amount = products_total * Decimal("0.05")
-        final_total = products_total + service_fee_amount
+        final_total = products_total
 
         # создаем заказ
         order = Order.objects.create(
@@ -50,7 +48,6 @@ class CreateOrderAPIView(APIView):
             address=address,
             payment_method=data["payment_method"],
             products_total=products_total,
-            service_fee_amount=service_fee_amount,
             final_total=final_total,
         )
 
