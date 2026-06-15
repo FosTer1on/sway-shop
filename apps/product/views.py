@@ -41,7 +41,7 @@ class ProductListAPIView(APIView):
             )
         )
 
-        stores = request.GET.getlist("store")
+        # stores = request.GET.getlist("store")
         brands = request.GET.getlist("brand")
         categories = request.GET.getlist("category")
         sizes = request.GET.getlist("size")
@@ -57,8 +57,8 @@ class ProductListAPIView(APIView):
         status_param = request.GET.get("status")
         order_by = request.GET.get("order_by")
 
-        if stores:
-            queryset = queryset.filter(store__slug__in=stores)
+        # if stores:
+        #     queryset = queryset.filter(store__slug__in=stores)
 
         if brands:
             queryset = queryset.filter(brand__slug__in=brands)
@@ -118,8 +118,9 @@ class ProductListAPIView(APIView):
         if status_param:
             queryset = queryset.filter(status=status_param)
 
+        # Сюда нужно будет добавить переменную stores когда нужно будет вернуть логику магазинов 
         has_filters = any([
-            stores, brands, categories, sizes,
+            brands, categories, sizes,  
             region, gender!= "all", search,
             min_price, max_price,
             discount_only, status_param
@@ -174,12 +175,12 @@ class ProductDetailAPIView(APIView):
 
 
 # Получение всех магазинов
-class StoreListView(APIView):
-    def get(self, request):
-        stores = Store.objects.only(
-            "id", "name", "slug", "created_at", "updated_at")
-        serializer = StoreSerializer(stores, many=True)
-        return Response(serializer.data)
+# class StoreListView(APIView):
+#     def get(self, request):
+#         stores = Store.objects.only(
+#             "id", "name", "slug", "created_at", "updated_at")
+#         serializer = StoreSerializer(stores, many=True)
+#         return Response(serializer.data)
 
 
 # Получение всех брендов

@@ -3,10 +3,10 @@ from .models import *
 from utils.storage import build_public_url
 
 
-class StoreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Store
-        fields = ["id", "name", "slug", "created_at", "updated_at"]
+# class StoreSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Store
+#         fields = ["id", "name", "slug", "created_at", "updated_at"]
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -73,7 +73,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "status",
             "is_season",
             "brand",
-            "store",
+            # "store",
             "region",
             "gender",
             "gender_display",
@@ -112,7 +112,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     sizes = ProductSizeSerializer(many=True, read_only=True)
     brand = BrandSerializer(read_only=True)
-    store = StoreSerializer(read_only=True)
+    # store = StoreSerializer(read_only=True)
     final_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     gender_display = serializers.CharField(source="get_gender_display")
@@ -133,7 +133,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "is_season",
             "status",
             "brand",
-            "store",
+            # "store",
             "category",
             "region",
             "delivery_time",

@@ -5,14 +5,22 @@ from unidecode import unidecode
 from .mixins import TimeStampedModel
 
 
-def generate_unique_slug(instance, value, slug_field_name='slug'):
-    transliterated = unidecode(value)
-    slug = base_slug = slugify(transliterated)
+def generate_unique_slug(instance, value, slug_field_name="slug", max_length=265):
+    transliterated = unidecode(str(value or "item"))
+    base_slug = slugify(transliterated)[:max_length].strip("-")
+
+    if not base_slug:
+        base_slug = "item"
+
     ModelClass = instance.__class__
+    slug = base_slug
     counter = 1
-    while ModelClass.objects.filter(**{slug_field_name: slug}).exclude(id=instance.id).exists():
-        slug = f"{base_slug}-{counter}"
+
+    while ModelClass.objects.filter(**{slug_field_name: slug}).exclude(pk=instance.pk).exists():
+        suffix = f"-{counter}"
+        slug = f"{base_slug[:max_length - len(suffix)]}{suffix}"
         counter += 1
+
     return slug
 
 
@@ -171,7 +179,7 @@ class Product(TimeStampedModel):
     slug = models.SlugField(_("Slug"), max_length=265, unique=True, blank=True)
 
     store = models.ForeignKey(
-        "Store", on_delete=models.CASCADE, related_name="products")
+        "Store", on_delete=models.CASCADE, related_name="products", blank=True, null=True)
     category = models.ForeignKey(
         "Category", on_delete=models.CASCADE, related_name="products")
     brand = models.ForeignKey(
@@ -248,8 +256,15 @@ class Product(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            base = f"{self.name}-{self.store.name}"
-            self.slug = generate_unique_slug(self, base)
+            parts = [
+                self.name,
+                self.brand.name if self.brand else None,
+                self.region,
+            ]
+
+            base = "-".join(str(part) for part in parts if part)
+            self.slug = generate_unique_slug(self, base, max_length=265)
+
         super().save(*args, **kwargs)
 
     @property
@@ -299,9 +314,9 @@ class ProductImage(models.Model):
         verbose_name = _("Фото продукта")
         verbose_name_plural = _("Фотки продукта")
 
+
+
 # & Outfits
-
-
 class Outfit(models.Model):
     class Gender(models.TextChoices):
         MALE = "male", _("Мужской")
@@ -355,7 +370,14 @@ class Outfit(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = generate_unique_slug(self, self.title)
+            parts = [
+                self.title,
+                self.gender,
+            ]
+
+            base = "-".join(str(part) for part in parts if part)
+            self.slug = generate_unique_slug(self, base, max_length=265)
+
         super().save(*args, **kwargs)
 
     @property
