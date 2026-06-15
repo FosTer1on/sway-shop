@@ -14,16 +14,14 @@ class Favorite(models.Model):
         on_delete=models.CASCADE,
         related_name="favorited_by"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ("user", "product")  # один товар один раз
-        ordering = ["-created_at"]
+    created_at = models.DateTimeField(auto_now_add=True)   
 
 
     def __str__(self):
         return f"{self.user} → {self.product}"
 
     class Meta:
+        unique_together = ("user", "product")  # один товар один раз
+        ordering = ["-created_at"]
         verbose_name = "Избранное"
         verbose_name_plural = "Избранные"
