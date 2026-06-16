@@ -189,11 +189,8 @@ class ProductAdmin(TranslationAdmin):
                 "description",
             )
         }),
-        ("Логистика и наценка", {
-            "fields": ("cargo", "markup", "weight", "delivery_time")
-        }),
         ("Цены и скидки", {
-            "fields": ("price", "discount")
+            "fields": ("price", "discount", "cargo", "markup", "weight", "delivery_time")
         }),
         ("Статус и активность", {
             "fields": ("status", "is_season", "is_active")

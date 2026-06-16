@@ -342,28 +342,28 @@ class Outfit(models.Model):
         _("Карго"),
         max_digits=10,
         decimal_places=2,
-        default=0
+        default=0000
     )
 
     markup = models.DecimalField(
         _("Наценка"),
         max_digits=10,
         decimal_places=2,
-        default=0
+        default=0000
     )
 
     weight = models.DecimalField(
         _("Вес"),
         max_digits=6,
         decimal_places=2,
-        default=0,
+        default=0.,
         help_text=_("Вес в кг")
     )
 
     delivery_time = models.CharField(
         _("Время доставки"),
         max_length=100,
-        default="10-15 дней"
+        default="1"
     )
 
     is_active = models.BooleanField(default=True)
