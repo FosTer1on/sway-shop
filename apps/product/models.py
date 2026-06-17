@@ -212,6 +212,8 @@ class Product(TimeStampedModel):
     discount = models.PositiveIntegerField(_("Скидка %"), default=0)
     quantity = models.PositiveIntegerField(_("Количество"), default=0)
 
+    product_link = models.CharField(_("Ссылка на товар"), blank=True, null=True)
+
     cargo = models.DecimalField(
         _("Карго"),
         max_digits=10,

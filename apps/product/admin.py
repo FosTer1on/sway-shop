@@ -186,6 +186,7 @@ class ProductAdmin(TranslationAdmin):
                 "size_chart",
                 "region",
                 "gender",
+                "product_link",
                 "description",
             )
         }),
