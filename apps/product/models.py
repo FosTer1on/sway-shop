@@ -212,7 +212,7 @@ class Product(TimeStampedModel):
         null=True,
         blank=True,
         related_name="products",
-        verbose_name=_("Группа вариантов")
+        verbose_name=_("Группа цветовых вариантов")
     )
 
     color_name = models.CharField(
@@ -223,7 +223,7 @@ class Product(TimeStampedModel):
     )
 
     color_hex = models.CharField(
-        _("HEX цвета"),
+        _("HEX код цвета"),
         max_length=20,
         blank=True,
         null=True,
