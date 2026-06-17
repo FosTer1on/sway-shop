@@ -156,11 +156,11 @@ class SizeChart(models.Model):
 
 
 class ProductVariantGroup(TimeStampedModel):
-    name = models.CharField(_("Название группы"), max_length=255, unique=True)
+    name = models.CharField(_("Название цветовой группы"), max_length=255, unique=True)
 
     class Meta:
-        verbose_name = _("Группа вариантов товара")
-        verbose_name_plural = _("Группы вариантов товаров")
+        verbose_name = _("Цветовой вариант товара")
+        verbose_name_plural = _("Цветовые варианты товаров")
 
     def __str__(self):
         return self.name
