@@ -54,6 +54,27 @@ class ProductImageSerializer(serializers.ModelSerializer):
         return build_public_url(obj.image.name)
 
 
+class ProductColorVariantSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "color_name",
+            "color_hex",
+            "image_url",
+        ]
+
+    def get_image_url(self, obj):
+        image = obj.images.first()
+        if not image or not image.image:
+            return None
+        return build_public_url(image.image.name)
+
+
 class ProductListSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     final_price = serializers.SerializerMethodField()
@@ -117,6 +138,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     gender_display = serializers.CharField(source="get_gender_display")
     size_chart = SizeChartSerializer(read_only=True)
+    color_variants = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -142,6 +164,10 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "size_chart",
             "images",
             "sizes",
+            "variant_group",
+            "color_name",
+            "color_hex",
+            "color_variants",
             "created_at",
             "updated_at",
         ]
@@ -156,6 +182,22 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             obj.price - (obj.price * obj.discount / 100)
         )
         return f"{int(final):,}".replace(",", " ")
+
+    def get_color_variants(self, obj):
+        if not obj.variant_group_id:
+            return []
+
+        variants = (
+            Product.objects
+            .filter(
+                variant_group_id=obj.variant_group_id,
+                is_active=True,
+            )
+            .prefetch_related("images")
+            .order_by("id")
+        )
+
+        return ProductColorVariantSerializer(variants, many=True).data
 
 
 class OutfitListSerializer(serializers.ModelSerializer):

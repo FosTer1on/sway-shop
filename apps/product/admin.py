@@ -139,6 +139,9 @@ class ProductAdmin(TranslationAdmin):
         "store",
         "price",
         "discount",
+        "variant_group",
+        "color_name",
+        "color_hex",
         "cargo",
         "markup",
         "weight",
@@ -173,6 +176,8 @@ class ProductAdmin(TranslationAdmin):
         "store__name",
         "brand__name",
         "category__name",
+        "variant_group__name",
+        "color_name",
     )
 
     fieldsets = (
@@ -183,6 +188,9 @@ class ProductAdmin(TranslationAdmin):
                 "store",
                 "category",
                 "brand",
+                "variant_group",
+                "color_name",
+                "color_hex",
                 "size_chart",
                 "region",
                 "gender",
@@ -234,6 +242,12 @@ class ProductSizeAdmin(admin.ModelAdmin):
     list_display = ("product", "size", "quantity")
     list_filter = ("size__size_type", "product__store")
     search_fields = ("product__name", "size__name")
+
+
+@admin.register(ProductVariantGroup)
+class ProductVariantGroupAdmin(admin.ModelAdmin):
+    list_display = ("name", "created_at", "updated_at")
+    search_fields = ("name",)
 
 
 class OutfitItemInline(admin.TabularInline):

@@ -155,6 +155,18 @@ class SizeChart(models.Model):
         return self.name
 
 
+class ProductVariantGroup(TimeStampedModel):
+    name = models.CharField(_("Название группы"), max_length=255, unique=True)
+
+    class Meta:
+        verbose_name = _("Группа вариантов товара")
+        verbose_name_plural = _("Группы вариантов товаров")
+
+    def __str__(self):
+        return self.name
+
+
+
 # ========================
 # 🛍️ Товары
 # ========================
@@ -192,6 +204,30 @@ class Product(TimeStampedModel):
         blank=True,
         related_name="products",
         verbose_name=_("Таблица размеров")
+    )
+
+    variant_group = models.ForeignKey(
+        "ProductVariantGroup",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="products",
+        verbose_name=_("Группа вариантов")
+    )
+
+    color_name = models.CharField(
+        _("Название цвета"),
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    color_hex = models.CharField(
+        _("HEX цвета"),
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text=_("Например: #000000")
     )
 
     gender = models.CharField(
