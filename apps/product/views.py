@@ -9,11 +9,12 @@ from rest_framework.pagination import PageNumberPagination
 from .models import *
 from .serializers import *
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from utils.products_groupiration import mix_products_by_groups, get_product_group_id, split_by_gender
 
 
 # Кастомная пагинация товаров (по 30 товаров)
 class ProductPagination(PageNumberPagination):
-    page_size = 30
+    page_size = 1
 
 
 # Кастомная пагинация аутфитов (по 30 товаров)
@@ -146,11 +147,50 @@ class ProductListAPIView(APIView):
             else:
                 queryset = queryset.order_by("created_at", "id")
 
-        paginator = ProductPagination()
-        result_page = paginator.paginate_queryset(queryset, request)
-        serializer = ProductListSerializer(result_page, many=True)
+        seed = request.GET.get("seed") or date.today().strftime("%Y%m%d")
+        page_number = int(request.GET.get("page", 1))
+        page_size = ProductPagination.page_size
 
-        return paginator.get_paginated_response(serializer.data)
+        products = list(queryset)
+
+        mixed_products = mix_products_by_groups(
+            products,
+            seed=f"{seed}-{gender}-{region}-{brands}-{categories}-{sizes}-{search}"
+        )
+
+        start = (page_number - 1) * page_size
+        end = start + page_size
+
+        page_products = mixed_products[start:end]
+
+        if gender in ["male", "female"]:
+            page_products = split_by_gender(
+                page_products,
+                selected_gender=gender,
+                page_size=page_size
+            )
+
+        serializer = ProductListSerializer(page_products, many=True)
+
+        next_page = None
+        previous_page = None
+
+        if end < len(mixed_products):
+            next_page = request.build_absolute_uri(
+                request.path + f"?page={page_number + 1}"
+            )
+
+        if page_number > 1:
+            previous_page = request.build_absolute_uri(
+                request.path + f"?page={page_number - 1}"
+            )
+
+        return Response({
+            "count": len(mixed_products),
+            "next": next_page,
+            "previous": previous_page,
+            "results": serializer.data,
+        })
 
 
 # Получение конкретного товара по slug
