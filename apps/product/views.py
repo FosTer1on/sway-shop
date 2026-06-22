@@ -14,7 +14,7 @@ from utils.products_groupiration import mix_products_by_groups, get_product_grou
 
 # Кастомная пагинация товаров (по 30 товаров)
 class ProductPagination(PageNumberPagination):
-    page_size = 1
+    page_size = 30
 
 
 # Кастомная пагинация аутфитов (по 30 товаров)
