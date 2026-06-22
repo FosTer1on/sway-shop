@@ -11,7 +11,7 @@ from utils.storage import build_public_url
 
 @admin.register(Category)
 class CategoryAdmin(TranslationAdmin):
-    list_display = ("name", "slug", "created_at", "updated_at")
+    list_display = ("name", "slug", "sort_order", "is_active", "created_at", "updated_at")
     readonly_fields = ("slug",)
 
     def get_fields(self, request, obj=None):
@@ -37,7 +37,7 @@ class CategoryAdmin(TranslationAdmin):
 # ==========================
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "created_at", "updated_at")
+    list_display = ("name", "slug", "sort_order", "is_active", "created_at", "updated_at")
     readonly_fields = ("slug",)
 
     def get_fields(self, request, obj=None):
@@ -258,7 +258,7 @@ class OutfitItemInline(admin.TabularInline):
 
 
 @admin.register(Outfit)
-class OutfitAdmin(admin.ModelAdmin):
+class OutfitAdmin(TranslationAdmin):
     list_display = (
         "admin_image_preview",
         "title",

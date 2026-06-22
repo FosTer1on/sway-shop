@@ -14,7 +14,8 @@ class BrandSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Brand
-        fields = ["id", "name", "slug", "icon_url", "created_at", "updated_at"]
+        fields = ["id", "name", "slug", "icon_url", "sort_order",
+            "is_active", "created_at", "updated_at"]
 
     def get_icon_url(self, obj):
         if not obj.icon:
@@ -27,7 +28,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ["id", "name", "slug", "icon_url", "created_at", "updated_at"]
+        fields = ["id", "name", "slug", "icon_url", "sort_order",
+            "is_active", "created_at", "updated_at"]
 
     def get_icon_url(self, obj):
         if not obj.icon:
@@ -195,7 +197,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             )
             .prefetch_related("images")
             .order_by("id")
-        )
+        )   
 
         return ProductColorVariantSerializer(variants, many=True).data
 

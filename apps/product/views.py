@@ -186,17 +186,26 @@ class ProductDetailAPIView(APIView):
 # Получение всех брендов
 class BrandListView(APIView):
     def get(self, request):
-        brands = Brand.objects.only(
-            "id", "name", "slug", "icon", "created_at", "updated_at")
+        brands = (
+            Brand.objects
+            .filter(is_active=True)
+            .only("id", "name", "slug", "icon", "sort_order", "is_active", "created_at", "updated_at")
+            .order_by("sort_order", "name")
+        )
+
         serializer = BrandSerializer(brands, many=True)
         return Response(serializer.data)
 
 
-# Получение всех категорий
 class CategoryListView(APIView):
     def get(self, request):
-        categories = Category.objects.only(
-            "id", "name", "slug", "icon", "created_at", "updated_at")
+        categories = (
+            Category.objects
+            .filter(is_active=True)
+            .only("id", "name", "slug", "icon", "sort_order", "is_active", "created_at", "updated_at")
+            .order_by("sort_order", "name")
+        )
+
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data)
 

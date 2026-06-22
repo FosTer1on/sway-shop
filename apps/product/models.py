@@ -63,6 +63,8 @@ class Category(TimeStampedModel):
     name = models.CharField(_("Название категории"),
                             max_length=255, unique=True)
     slug = models.SlugField(max_length=265, unique=True, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
     icon = models.ImageField(
         upload_to="category_icons/", blank=True, null=True)
     size_type = models.ForeignKey(
@@ -88,6 +90,8 @@ class Brand(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     icon = models.ImageField(upload_to="brand_icons/", blank=True, null=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -147,23 +151,25 @@ class SizeChart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         verbose_name = _("Таблица размеров")
         verbose_name_plural = _("Таблицы размеров")
-
-    def __str__(self):
-        return self.name
+        ordering = ["-id"]
 
 
 class ProductVariantGroup(TimeStampedModel):
     name = models.CharField(_("Название цветовой группы"), max_length=255, unique=True)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         verbose_name = _("Цветовой вариант товара")
         verbose_name_plural = _("Цветовые варианты товаров")
-
-    def __str__(self):
-        return self.name
+        ordering = ["-id"]
 
 
 
