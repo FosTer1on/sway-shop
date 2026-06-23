@@ -51,7 +51,7 @@ def mix_products_by_groups(products, seed=None):
 
 
 
-def split_by_gender(products, selected_gender, page_size=30):
+def sort_by_selected_gender(products, selected_gender):
     if selected_gender not in ["male", "female"]:
         return products
 
@@ -65,19 +65,4 @@ def split_by_gender(products, selected_gender, page_size=30):
         if product.gender == Product.Gender.UNISEX
     ]
 
-    main_limit = round(page_size * 0.7)
-    unisex_limit = page_size - main_limit
-
-    selected = main_gender_products[:main_limit] + unisex_products[:unisex_limit]
-
-    if len(selected) < page_size:
-        used_ids = {product.id for product in selected}
-
-        remaining = [
-            product for product in products
-            if product.id not in used_ids
-        ]
-
-        selected += remaining[:page_size - len(selected)]
-
-    return selected
+    return main_gender_products + unisex_products

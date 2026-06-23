@@ -153,22 +153,38 @@ class ProductListAPIView(APIView):
 
         products = list(queryset)
 
-        mixed_products = mix_products_by_groups(
-            products,
-            seed=f"{seed}-{gender}-{region}-{brands}-{categories}-{sizes}-{search}"
-        )
+        if gender in ["male", "female"]:
+            gender_products = [
+                product for product in products
+                if product.gender == gender
+            ]
+
+            unisex_products = [
+                product for product in products
+                if product.gender == Product.Gender.UNISEX
+            ]
+
+            mixed_gender_products = mix_products_by_groups(
+                gender_products,
+                seed=f"{seed}-{gender}-main-{region}-{brands}-{categories}-{sizes}-{search}"
+            )
+
+            mixed_unisex_products = mix_products_by_groups(
+                unisex_products,
+                seed=f"{seed}-{gender}-unisex-{region}-{brands}-{categories}-{sizes}-{search}"
+            )
+
+            mixed_products = mixed_gender_products + mixed_unisex_products
+        else:
+            mixed_products = mix_products_by_groups(
+                products,
+                seed=f"{seed}-{gender}-{region}-{brands}-{categories}-{sizes}-{search}"
+            )
 
         start = (page_number - 1) * page_size
         end = start + page_size
 
         page_products = mixed_products[start:end]
-
-        if gender in ["male", "female"]:
-            page_products = split_by_gender(
-                page_products,
-                selected_gender=gender,
-                page_size=page_size
-            )
 
         serializer = ProductListSerializer(page_products, many=True)
 
