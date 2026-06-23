@@ -9,7 +9,7 @@ from rest_framework.pagination import PageNumberPagination
 from .models import *
 from .serializers import *
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from utils.products_groupiration import mix_products_by_groups, get_product_group_id, split_by_gender
+from utils.products_groupiration import mix_products_by_groups, get_product_group_id, sort_by_selected_gender
 
 
 # Кастомная пагинация товаров (по 30 товаров)
