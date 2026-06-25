@@ -78,7 +78,7 @@ class ProductColorVariantSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializer(serializers.ModelSerializer):
-    images = ProductImageSerializer(many=True, read_only=True)
+    image_url = serializers.SerializerMethodField()
     final_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     region = serializers.CharField(source="get_region_display")
@@ -100,7 +100,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "region",
             "gender",
             "gender_display",
-            "images",
+            "image_url",
             "delivery_time",
         ]
 
@@ -114,6 +114,12 @@ class ProductListSerializer(serializers.ModelSerializer):
             obj.price - (obj.price * obj.discount / 100)
         )
         return f"{int(final):,}".replace(",", " ")
+    
+    def get_image_url(self, obj):
+        image = obj.images.first()
+        if not image or not image.image:
+            return None
+        return build_public_url(image.image.name)
 
 
 class ProductSizeSerializer(serializers.ModelSerializer):
