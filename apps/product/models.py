@@ -3,6 +3,7 @@ from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from unidecode import unidecode
 from .mixins import TimeStampedModel
+from utils.convert_to_webp_helper import convert_image_to_webp
 
 
 def generate_unique_slug(instance, value, slug_field_name="slug", max_length=265):
@@ -351,6 +352,16 @@ class ProductImage(models.Model):
     image = models.ImageField(upload_to="products")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if self.image and not self.image.name.lower().endswith(".webp"):
+            self.image = convert_image_to_webp(
+                self.image,
+                upload_to="products",
+                quality=82
+            )
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Image for {self.product.name}"
 
@@ -421,6 +432,13 @@ class Outfit(models.Model):
 
             base = "-".join(str(part) for part in parts if part)
             self.slug = generate_unique_slug(self, base, max_length=265)
+
+        if self.image and not self.image.name.lower().endswith(".webp"):
+            self.image = convert_image_to_webp(
+                self.image,
+                upload_to="outfits",
+                quality=82
+            )
 
         super().save(*args, **kwargs)
 
