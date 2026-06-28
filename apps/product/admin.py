@@ -41,7 +41,7 @@ class BrandAdmin(admin.ModelAdmin):
     readonly_fields = ("slug",)
 
     def get_fields(self, request, obj=None):
-        fields = ["name", "icon"]
+        fields = ["name", "is_active", "icon"]
         if obj:
             fields.insert(1, "slug")
         return fields
