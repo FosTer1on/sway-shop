@@ -128,9 +128,15 @@ class ProductListAPIView(APIView):
         ])
 
         if order_by == "price_asc":
-            queryset = queryset.order_by("final_price_calc", "id")
+            queryset = queryset.order_by(
+                "final_price_calc",
+                "id",
+            )
         elif order_by == "price_desc":
-            queryset = queryset.order_by("-final_price_calc", "-id")
+            queryset = queryset.order_by(
+                "-final_price_calc",
+                "-id",
+            )
         else:
             if not has_filters:
                 daily_seed = date.today().strftime("%Y%m%d")
@@ -153,32 +159,51 @@ class ProductListAPIView(APIView):
 
         products = list(queryset)
 
-        if gender in ["male", "female"]:
+        has_price_ordering = order_by in ["price_asc", "price_desc"]
+
+        if has_price_ordering:
+            # QuerySet уже отсортирован по final_price_calc.
+            # При сортировке по цене ничего не перемешиваем.
+            mixed_products = products
+
+        elif gender in ["male", "female"]:
             gender_products = [
-                product for product in products
+                product
+                for product in products
                 if product.gender == gender
             ]
 
             unisex_products = [
-                product for product in products
+                product
+                for product in products
                 if product.gender == Product.Gender.UNISEX
             ]
 
             mixed_gender_products = mix_products_by_groups(
                 gender_products,
-                seed=f"{seed}-{gender}-main-{region}-{brands}-{categories}-{sizes}-{search}"
+                seed=(
+                    f"{seed}-{gender}-main-{region}-"
+                    f"{brands}-{categories}-{sizes}-{search}"
+                ),
             )
 
             mixed_unisex_products = mix_products_by_groups(
                 unisex_products,
-                seed=f"{seed}-{gender}-unisex-{region}-{brands}-{categories}-{sizes}-{search}"
+                seed=(
+                    f"{seed}-{gender}-unisex-{region}-"
+                    f"{brands}-{categories}-{sizes}-{search}"
+                ),
             )
 
             mixed_products = mixed_gender_products + mixed_unisex_products
+
         else:
             mixed_products = mix_products_by_groups(
                 products,
-                seed=f"{seed}-{gender}-{region}-{brands}-{categories}-{sizes}-{search}"
+                seed=(
+                    f"{seed}-{gender}-{region}-"
+                    f"{brands}-{categories}-{sizes}-{search}"
+                ),
             )
 
         start = (page_number - 1) * page_size
@@ -191,14 +216,18 @@ class ProductListAPIView(APIView):
         next_page = None
         previous_page = None
 
+        query_params = request.GET.copy()
+
         if end < len(mixed_products):
+            query_params["page"] = page_number + 1
             next_page = request.build_absolute_uri(
-                request.path + f"?page={page_number + 1}"
+                f"{request.path}?{query_params.urlencode()}"
             )
 
         if page_number > 1:
+            query_params["page"] = page_number - 1
             previous_page = request.build_absolute_uri(
-                request.path + f"?page={page_number - 1}"
+                f"{request.path}?{query_params.urlencode()}"
             )
 
         return Response({
