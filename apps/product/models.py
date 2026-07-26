@@ -162,7 +162,8 @@ class SizeChart(models.Model):
 
 
 class ProductVariantGroup(TimeStampedModel):
-    name = models.CharField(_("Название цветовой группы"), max_length=255, unique=True)
+    name = models.CharField(_("Название цветовой группы"),
+                            max_length=255, unique=True)
 
     def __str__(self):
         return self.name
@@ -171,7 +172,6 @@ class ProductVariantGroup(TimeStampedModel):
         verbose_name = _("Цветовой вариант товара")
         verbose_name_plural = _("Цветовые варианты товаров")
         ordering = ["-id"]
-
 
 
 # ========================
@@ -255,7 +255,8 @@ class Product(TimeStampedModel):
     discount = models.PositiveIntegerField(_("Скидка %"), default=0)
     quantity = models.PositiveIntegerField(_("Количество"), default=0)
 
-    product_link = models.CharField(_("Ссылка на товар"), blank=True, null=True)
+    product_link = models.CharField(
+        _("Ссылка на товар"), blank=True, null=True)
 
     cargo = models.DecimalField(
         _("Карго"),
@@ -370,7 +371,6 @@ class ProductImage(models.Model):
         verbose_name_plural = _("Фотки продукта")
 
 
-
 # & Outfits
 class Outfit(models.Model):
     class Gender(models.TextChoices):
@@ -462,6 +462,11 @@ class OutfitImage(models.Model):
         verbose_name=_("Образ"),
     )
 
+    image = models.ImageField(
+        _("Фото"),
+        upload_to="outfits",
+    )
+
     order = models.PositiveIntegerField(
         _("Порядок"),
         default=0,
@@ -470,6 +475,13 @@ class OutfitImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        if self.image and not self.image.name.lower().endswith(".webp"):
+            self.image = convert_image_to_webp(
+                self.image,
+                upload_to="outfits",
+                quality=82,
+            )
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -541,5 +553,3 @@ class UserEvent(models.Model):
 
     def __str__(self):
         return f"{self.event_type} | {self.product_slug or self.search_query or self.user}"
-
-
