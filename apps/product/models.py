@@ -454,6 +454,33 @@ class Outfit(models.Model):
         verbose_name_plural = _("Луки")
 
 
+class OutfitImage(models.Model):
+    outfit = models.ForeignKey(
+        Outfit,
+        on_delete=models.CASCADE,
+        related_name="images",
+        verbose_name=_("Образ"),
+    )
+
+    order = models.PositiveIntegerField(
+        _("Порядок"),
+        default=0,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Фото образа: {self.outfit.title}"
+
+    class Meta:
+        ordering = ["order", "id"]
+        verbose_name = _("Фото образа")
+        verbose_name_plural = _("Фотографии образа")
+
+
 class OutfitItem(models.Model):
     outfit = models.ForeignKey(
         Outfit, on_delete=models.CASCADE, related_name="items")
@@ -514,3 +541,5 @@ class UserEvent(models.Model):
 
     def __str__(self):
         return f"{self.event_type} | {self.product_slug or self.search_query or self.user}"
+
+

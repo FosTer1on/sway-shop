@@ -11,7 +11,8 @@ from utils.storage import build_public_url
 
 @admin.register(Category)
 class CategoryAdmin(TranslationAdmin):
-    list_display = ("name", "slug", "sort_order", "is_active", "created_at", "updated_at")
+    list_display = ("name", "slug", "sort_order",
+                    "is_active", "created_at", "updated_at")
     readonly_fields = ("slug",)
 
     def get_fields(self, request, obj=None):
@@ -37,7 +38,8 @@ class CategoryAdmin(TranslationAdmin):
 # ==========================
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "sort_order", "is_active", "created_at", "updated_at")
+    list_display = ("name", "slug", "sort_order",
+                    "is_active", "created_at", "updated_at")
     readonly_fields = ("slug",)
 
     def get_fields(self, request, obj=None):
@@ -251,6 +253,30 @@ class ProductVariantGroupAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
+class OutfitImageInline(admin.TabularInline):
+    model = OutfitImage
+    extra = 1
+    fields = (
+        "image",
+        "order",
+        "preview",
+    )
+    readonly_fields = ("preview",)
+
+    def preview(self, obj):
+        if obj.image and getattr(obj.image, "name", None):
+            url = build_public_url(obj.image.name)
+
+            return format_html(
+                '<img src="{}" width="80" style="border-radius:6px"/>',
+                url,
+            )
+
+        return "—"
+
+    preview.short_description = "Превью"
+
+
 class OutfitItemInline(admin.TabularInline):
     model = OutfitItem
     extra = 1
@@ -298,7 +324,6 @@ class OutfitAdmin(TranslationAdmin):
         "title",
         "slug",
         "admin_image_preview",
-        "image",
         "description",
         "gender",
         "price",
@@ -310,18 +335,23 @@ class OutfitAdmin(TranslationAdmin):
         "is_active",
     )
 
-    inlines = [OutfitItemInline]
+    inlines = [
+        OutfitImageInline,
+        OutfitItemInline,
+    ]
 
     def admin_image_preview(self, obj):
-        if obj.image and getattr(obj.image, "name", None):
-            url = build_public_url(obj.image.name)
+        image = obj.images.first()
+
+        if image and image.image and getattr(image.image, "name", None):
+            url = build_public_url(image.image.name)
+
             return format_html(
                 '<img src="{}" width="80" style="border-radius:6px"/>',
-                url
+                url,
             )
-        return "—"
 
-    admin_image_preview.short_description = "Фото"
+        return "—"
 
 
 @admin.register(OutfitItem)

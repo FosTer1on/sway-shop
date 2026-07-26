@@ -208,11 +208,30 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         return ProductColorVariantSerializer(variants, many=True).data
 
 
+class OutfitImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OutfitImage
+        fields = [
+            "id",
+            "image_url",
+            "order",
+        ]
+
+    def get_image_url(self, obj):
+        if not obj.image:
+            return None
+
+        return build_public_url(obj.image.name)
+
+
 class OutfitListSerializer(serializers.ModelSerializer):
     products_count = serializers.IntegerField(read_only=True)
     price = serializers.SerializerMethodField()
     final_price = serializers.SerializerMethodField()
     gender_display = serializers.CharField(source="get_gender_display")
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Outfit
@@ -220,7 +239,7 @@ class OutfitListSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "slug",
-            "image",
+            "image_url",
             "description",
             "price",
             "final_price",
@@ -242,6 +261,14 @@ class OutfitListSerializer(serializers.ModelSerializer):
         )
         return f"{int(final):,}".replace(",", " ")
 
+    def get_image_url(self, obj):
+        image = obj.images.first()
+
+        if not image or not image.image:
+            return None
+
+        return build_public_url(image.image.name)
+
 
 class OutfitItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer()
@@ -257,6 +284,7 @@ class OutfitSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     final_price = serializers.SerializerMethodField()
     gender_display = serializers.CharField(source="get_gender_display")
+    images = OutfitImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Outfit
@@ -264,7 +292,7 @@ class OutfitSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "slug",
-            "image",
+            "images",
             "description",
             "price",
             "final_price",
